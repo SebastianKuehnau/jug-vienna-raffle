@@ -17,6 +17,5 @@ RUN --mount=type=cache,target=/root/.m2 --mount=type=cache,target=/root/.vaadin 
 # The "Run" stage. Start with a clean image, and copy over just the app itself, omitting gradle, npm and any intermediate build files.
 FROM eclipse-temurin:17
 COPY --from=build /app/target/app.jar app.jar
-WORKDIR /
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app.jar"]
