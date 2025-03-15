@@ -47,7 +47,7 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-core</artifactId>
+            <artifactId>vaadin</artifactId>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -78,6 +78,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-graphql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,7 +127,6 @@
             <!-- Production mode is activated using -Pproduction -->
             <id>production</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
                 <property>
                     <!-- If happening in buildpacks.io build, make a production build -->
                     <name>env.CNB_TARGET_OS</name>
