@@ -22,22 +22,19 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.LitRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.Menu;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-import jakarta.annotation.security.RolesAllowed;
-import java.util.Optional;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
+
+import java.util.Optional;
 
 @PageTitle("Master-Detail")
 @Route("master-detail/:samplePersonID?/:action?(edit)")
 @Menu(order = 1, icon = LineAwesomeIconUrl.COLUMNS_SOLID)
-@RolesAllowed("ADMIN")
 @Uses(Icon.class)
+@PermitAll
 public class MasterDetailView extends Div implements BeforeEnterObserver {
 
     private final String SAMPLEPERSON_ID = "samplePersonID";

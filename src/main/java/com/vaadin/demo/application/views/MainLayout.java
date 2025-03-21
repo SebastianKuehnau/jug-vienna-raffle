@@ -1,17 +1,12 @@
 package com.vaadin.demo.application.views;
 
-import com.vaadin.demo.application.data.User;
-import com.vaadin.demo.application.security.AuthenticatedUser;
+import com.vaadin.demo.application.security.data.KeycloakUser;
+import com.vaadin.demo.application.security.util.UserUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Footer;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -20,12 +15,19 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.menu.MenuConfiguration;
 import com.vaadin.flow.server.menu.MenuEntry;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,12 +40,12 @@ public class MainLayout extends AppLayout {
 
     private H1 viewTitle;
 
-    private AuthenticatedUser authenticatedUser;
-    private AccessAnnotationChecker accessChecker;
+    private final AuthenticationContext authenticationContext;
 
-    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
-        this.authenticatedUser = authenticatedUser;
-        this.accessChecker = accessChecker;
+    protected final Log logger = LogFactory.getLog(getClass());
+
+    public MainLayout(AuthenticationContext authenticationContext) {
+        this.authenticationContext = authenticationContext;
 
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
@@ -85,17 +87,36 @@ public class MainLayout extends AppLayout {
         return nav;
     }
 
+    public byte[] recoverImageFromUrl(String urlText) {
+        try {
+            URL url = new URL(urlText);
+            try (InputStream is = url.openStream()) {
+                return IOUtils.toByteArray(is);
+            }
+        } catch (IOException ioException) {
+            logger.error(ioException.getMessage());
+        }
+
+        return null;
+    }
+
+
     private Footer createFooter() {
         Footer layout = new Footer();
 
-        Optional<User> maybeUser = authenticatedUser.get();
+        Optional<KeycloakUser> maybeUser = UserUtil.getCurrentUser();
         if (maybeUser.isPresent()) {
-            User user = maybeUser.get();
+            KeycloakUser user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+
+            if (user.getAvatarUrl() != null) {
+                StreamResource resource = new StreamResource("profile-pic",
+                        () -> new ByteArrayInputStream(recoverImageFromUrl(user.getAvatarUrl())));
+
+                avatar.setImageResource(resource);
+            }
+
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
@@ -109,9 +130,7 @@ public class MainLayout extends AppLayout {
             div.add(new Icon("lumo", "dropdown"));
             div.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignItems.CENTER, LumoUtility.Gap.SMALL);
             userName.add(div);
-            userName.getSubMenu().addItem("Sign out", e -> {
-                authenticatedUser.logout();
-            });
+            userName.getSubMenu().addItem("Sign out", e -> authenticationContext.logout());
 
             layout.add(userMenu);
         } else {
