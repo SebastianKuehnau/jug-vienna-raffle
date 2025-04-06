@@ -44,8 +44,14 @@ public class SecurityConfiguration extends VaadinWebSecurity {
          super.configure(HttpSecurity) as it adds final anyRequest matcher
         */
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/public/**").permitAll()
-                .requestMatchers("/**").authenticated()
+            .requestMatchers(
+                "/login/**",
+                "/oauth2/**",
+                "/vaadinServlet/**",
+                "/VAADIN/**",
+                "/public/**"
+            ).permitAll()
+            .requestMatchers("/**").authenticated()
         );
 
         super.configure(http);
@@ -55,12 +61,15 @@ public class SecurityConfiguration extends VaadinWebSecurity {
                 .formLogin(FormLoginConfigurer::disable)
                 .rememberMe(RememberMeConfigurer::disable);
 
-        http.oauth2Login(oauth -> oauth.userInfoEndpoint(userInfo -> userInfo.oidcUserService(keycloakOAuth2UserService::loadUserFromRequest))
-                        .successHandler(new VaadinSavedRequestAwareAuthenticationSuccessHandler())
-                        .defaultSuccessUrl(keycloakProperties.appBaseUrl(), true)
-                        .failureUrl(keycloakProperties.appBaseUrl())
-                        .permitAll())
-                .exceptionHandling(exp -> exp.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(keycloakProperties.loginUrl())))
+        http.oauth2Login(oauth -> oauth
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(keycloakOAuth2UserService)
+                )
+                .successHandler(new VaadinSavedRequestAwareAuthenticationSuccessHandler())
+                .permitAll()
+
+            )
+//                .exceptionHandling(exp -> exp.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(keycloakProperties.loginUrl())))
                 .logout(logout -> logout.logoutSuccessHandler(this.logoutSuccessHandler())
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")

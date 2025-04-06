@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 @Service
 public class KeycloakOAuth2UserService extends OidcUserService {
 
-    public OidcUser loadUserFromRequest(final OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+    @Override
+    public OidcUser loadUser(final OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         final OidcUser oidcUser = super.loadUser(userRequest);
 
         final var realmRoles = this.findRoles(oidcUser.getAuthorities());
@@ -37,6 +38,9 @@ public class KeycloakOAuth2UserService extends OidcUserService {
         user.setSubject(oidcUser.getSubject());
         user.setIssuer(oidcUser.getIssuer());
         user.setClaims(oidcUser.getClaims());
+        user.setAvatarUrl((String) oidcUser.getAttributes().get("picture"));
+
+        System.out.println("RETURNING AUTHORITIES: " + user.getAuthorities());
 
         return user;
     }
