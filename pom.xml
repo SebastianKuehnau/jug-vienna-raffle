@@ -234,9 +234,5 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>local-keycloak</id>
-        </profile>
-
     </profiles>
 </project>
