@@ -12,14 +12,14 @@
 
     <properties>
         <java.version>17</java.version>
-        <vaadin.version>24.6.6</vaadin.version>
+        <vaadin.version>24.7.1</vaadin.version>
         <spring.profiles.active>local-keycloak</spring.profiles.active>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.3</version>
+        <version>3.4.4</version>
         <relativePath/>
     </parent>
 
