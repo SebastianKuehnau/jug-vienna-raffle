@@ -150,8 +150,8 @@
             <id>production</id>
             <activation>
                 <property>
-                    <!-- If happening in dokku buildpack, make a production build -->
-                    <name>env.DOKKU_ROOT</name>
+                    <!-- If happening in a buildpack, make a production build -->
+                    <name>env.CNB_BUILDPACK_DIR</name>
                 </property>
             </activation>
             <dependencies>
