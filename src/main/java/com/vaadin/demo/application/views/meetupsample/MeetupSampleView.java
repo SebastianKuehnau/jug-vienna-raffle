@@ -20,63 +20,57 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @PermitAll
 public class MeetupSampleView extends HorizontalLayout {
 
+    @Autowired
+    MeetupService service;
 
-  @Autowired
-  MeetupService service;
+    private Div content;
 
-  private Div content;
+    public MeetupSampleView() {
 
-  public MeetupSampleView() {
+        var getMe = new Button("Get Me");
+        var getMeInGroups = new Button("Get me in Group");
+        var getMyGroups = new Button("Get my groups");
+        content = new Div();
 
+        getMe.addClickListener(e -> {
+            content.add(service.getMe().toString());
+        });
 
+        getMeInGroups.addClickListener(e -> {
+            content.add(service.getMeInGroup().toString());
+        });
 
+        getMyGroups.addClickListener(e -> {
+            content.add(service.getMyGroups().toString());
+        });
 
-    var getMe = new Button("Get Me");
-    var getMeInGroups = new Button("Get me in Group");
-    var getMyGroups = new Button("Get my groups");
-    content = new Div();
+        var query = new TextField("Query");
+        var queryButton = new Button("Query absenden");
+        queryButton.addClickListener(e -> {
+            content.add(service.query(query.getValue()));
+        });
 
-    getMe.addClickListener(e -> {
-      content.add(service.getMe().toString());
-    });
+        var commands = new VerticalLayout();
 
-    getMeInGroups.addClickListener(e -> {
-      content.add(service.getMeInGroup().toString());
-    });
+        commands.add(getMe);
+        commands.add(new Hr());
+        commands.add(getMeInGroups);
+        commands.add(new Hr());
+        commands.add(getMyGroups);
+        commands.add(new Hr());
+        commands.add(query);
+        commands.add(queryButton);
+        commands.add(new Hr());
+        var clear = new Button("Clear");
+        clear.addClickListener(e -> {
+            content.removeAll();
+        });
+        commands.add(clear);
 
-    getMyGroups.addClickListener(e -> {
-      content.add(service.getMyGroups().toString());
-    });
+        var display = new VerticalLayout(content);
 
-    var query = new TextField("Query");
-    var queryButton = new Button("Query absenden");
-    queryButton.addClickListener(e -> {
-      content.add(service.query(query.getValue()));
-    });
+        add(commands);
+        add(display);
 
-    var commands = new VerticalLayout();
-
-
-
-    commands.add(getMe);
-    commands.add(new Hr());
-    commands.add(getMeInGroups);
-    commands.add(new Hr());
-    commands.add(getMyGroups);
-    commands.add(new Hr());
-    commands.add(query);
-    commands.add(queryButton);
-    commands.add(new Hr());
-    var clear = new Button("Clear");
-    clear.addClickListener(e -> {
-      content.removeAll();
-    });
-    commands.add(clear);
-
-    var display = new VerticalLayout(content);
-
-    add(commands);
-    add(display);
-
-  }
+    }
 }
