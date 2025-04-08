@@ -151,9 +151,8 @@
             <id>production</id>
             <activation>
                 <property>
-                    <!-- If happening in buildpacks.io build, make a production build -->
-                    <name>env.CNB_TARGET_OS</name>
-                    <value>linux</value>
+                    <!-- If happening in dokku buildpack, make a production build -->
+                    <name>env.DOKKU_ROOT</name>
                 </property>
             </activation>
             <dependencies>
