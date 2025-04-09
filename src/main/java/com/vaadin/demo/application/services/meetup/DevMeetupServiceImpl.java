@@ -79,4 +79,9 @@ public class DevMeetupServiceImpl implements MeetupService {
     public String getMyGroups() {
         return "";
     }
+
+    @Override
+    public String query(String query) {
+        return "";
+    }
 }
