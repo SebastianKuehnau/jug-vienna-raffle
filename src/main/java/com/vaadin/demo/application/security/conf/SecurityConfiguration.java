@@ -5,6 +5,7 @@ import com.vaadin.demo.application.security.properties.KeycloakProperties;
 import com.vaadin.demo.application.security.service.KeycloakOAuth2UserService;
 import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSuccessHandler;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
 public class SecurityConfiguration extends VaadinWebSecurity {
 
     private final KeycloakProperties keycloakProperties;
