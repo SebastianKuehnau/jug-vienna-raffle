@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.services;
 
 import com.vaadin.demo.application.data.SamplePerson;
-import com.vaadin.demo.application.data.SamplePersonRepository;
+import com.vaadin.demo.application.repository.SamplePersonRepository;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

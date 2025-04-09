@@ -1,4 +1,4 @@
-package com.vaadin.demo.application.services;
+package com.vaadin.demo.application.services.meetup;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
@@ -10,13 +10,15 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-@Service
-public class MeetupService {
+import java.util.Optional;
+import java.util.Set;
+
+public class KeycloakMeetupServiceImpl implements MeetupService {
   private final HttpSyncGraphQlClient httpSyncGraphQlClient;
   private RestClient restClient;
   private final OAuth2AuthorizedClientService authorizedClientService;
 
-  public MeetupService(
+  public KeycloakMeetupServiceImpl(
       @Value("${keycloak.server-url}") String keycloakServerUrl,
       @Value("${keycloak.realm}") String keycloakRealm,
       OAuth2AuthorizedClientService authorizedClientService
@@ -46,6 +48,18 @@ public class MeetupService {
     throw new IllegalStateException("User is not authenticated with OAuth2 or token is missing.");
   }
 
+
+  @Override
+  public Optional<MeetupEvent> getEvent(String meetupEventId) {
+  //TODO: needs to be implemented
+    return Optional.empty();
+  }
+
+  @Override
+  public Set<MeetupEvent> getEvents() {
+    //TODO: needs to be implemented
+    return Set.of();
+  }
 
   public MeResponse getMe() {
     /*
@@ -141,28 +155,5 @@ public class MeetupService {
         .body(String.class);
   }
 
-
-  public record MeResponse(MeData data) {}
-
-  public record MeData(
-      GroupByUrlname groupByUrlname,
-      Self self
-  ) {}
-
-  public record GroupByUrlname(
-      String id,
-      boolean isMember,
-      boolean isOrganizer,
-      boolean isPrimaryOrganizer,
-      String urlname
-  ) {}
-
-  public record Self(
-      String id,
-      String email,
-      String name,
-      String memberUrl,
-      String memberPhotoUrl
-  ) {}
 
 }
