@@ -19,12 +19,12 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
 
-@Menu(order = 5, icon = LineAwesomeIconUrl.TOOLS_SOLID)
+@Menu(order = 5, icon = LineAwesomeIconUrl.TOOLS_SOLID, title = "Raffle Admin View")
 @AnonymousAllowed
-@Route("admin")
-public class AdminView extends VerticalLayout {
+@Route("raffle-admin")
+public class RaffleAdminView extends VerticalLayout {
 
-    public AdminView(RaffleService raffleService, PrizeService prizeService, MeetupService meetupService) {
+    public RaffleAdminView(RaffleService raffleService) {
         add(new H1("Admin View"));
 
         var raffleGrid = new Grid<>(Raffle.class);
