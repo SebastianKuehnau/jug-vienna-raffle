@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.views.meetupsample;
 
-import com.vaadin.demo.application.services.MeetupService;
+import com.vaadin.demo.application.services.meetup.KeycloakMeetupServiceImpl;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -21,7 +21,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 public class MeetupSampleView extends HorizontalLayout {
 
     @Autowired
-    MeetupService service;
+    KeycloakMeetupServiceImpl service;
 
     private Div content;
 

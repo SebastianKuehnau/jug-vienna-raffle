@@ -1,5 +1,6 @@
-package com.vaadin.demo.application.data;
+package com.vaadin.demo.application.repository;
 
+import com.vaadin.demo.application.data.SamplePerson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
