@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.services;
 
 import com.vaadin.demo.application.data.User;
-import com.vaadin.demo.application.data.UserRepository;
+import com.vaadin.demo.application.repository.UserRepository;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
