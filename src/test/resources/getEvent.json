@@ -1,0 +1,14 @@
+{
+  "data": {
+    "event": {
+      "id": "305897281",
+      "token": "305897281",
+      "title": "Java on AWS Special",
+      "dateTime": "2025-06-16T18:00:00+02:00",
+      "description": "Joint meetup with [AWS Vienna Meetup](https://www.meetup.com/amazon-web-services-aws-vienna/) !\n\nAgenda\n\n18:00 doors open\n18:20 welcome\n18:30 Talk 1\n19:30 Break\n19:55 Raffle\n20:00 Talk 2\n21:15 Networking nearby",
+      "eventType": "PHYSICAL",
+      "eventUrl": "https://www.meetup.com/java-vienna/events/305897281/",
+      "status": "ACTIVE"
+    }
+  }
+}
