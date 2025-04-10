@@ -2,7 +2,6 @@ package com.vaadin.demo.application.services.meetup;
 
 import com.google.common.collect.ImmutableMap;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class MeetupMockData {
