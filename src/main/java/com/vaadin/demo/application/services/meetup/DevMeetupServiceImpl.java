@@ -38,8 +38,10 @@ public class DevMeetupServiceImpl implements MeetupService {
         var title = eventNode.path("title").asText();
         var dateTime = OffsetDateTime.parse(eventNode.path("dateTime").asText());
         var description = eventNode.path("description").asText();
+        var eventUrl = eventNode.path("eventUrl").asText();
+        var status = eventNode.path("status").asText();
 
-        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description);
+        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description, eventUrl, status);
         return event;
     }
 
@@ -81,7 +83,17 @@ public class DevMeetupServiceImpl implements MeetupService {
     }
 
     @Override
-    public String query(String query) {
+    public String legacyQuery(String query) {
         return "";
+    }
+
+    @Override
+    public String queryNew(String query) {
+        return "";
+    }
+
+    @Override
+    public Optional<MeetupEventWithRSVPs> getEventWithRSVPs(String meetupEventId) {
+        return Optional.empty();
     }
 }

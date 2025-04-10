@@ -1,0 +1,174 @@
+{
+  "data": {
+    "event": {
+      "id": "000000001",
+      "dateTime": "2025-06-16T18:00:00+02:00",
+      "title": "Java on AWS Special",
+      "description": "Joint meetup with [Dummy Meetup](https://www.example.com/) !\n\nAgenda\n\n18:00 doors open\n18:20 welcome\n18:30 Talk 1\n19:30 Break\n19:55 Raffle\n20:00 Talk 2\n21:15 Networking nearby",
+      "eventType": "PHYSICAL",
+      "eventUrl": "https://www.example.com/event/000000001",
+      "status": "ACTIVE",
+      "token": "000000001",
+      "rsvps": {
+        "edges": [
+          {
+            "node": {
+              "id": "1000000001",
+              "isFirstEvent": false,
+              "isHost": true,
+              "member": {
+                "id": "10001",
+                "email": "user1@example.com",
+                "gender": "MALE",
+                "memberUrl": "https://www.example.com/members/10001/",
+                "name": "John Doe",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10001",
+                "memberPhoto": {
+                  "baseUrl": "https://dummyimage.com/",
+                  "highResUrl": "https://dummyimage.com/photo1_highres.jpeg",
+                  "id": "photo1",
+                  "standardUrl": "https://dummyimage.com/photo1.jpeg",
+                  "thumbUrl": "https://dummyimage.com/photo1_thumb.jpeg"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000002",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10002",
+                "email": "user2@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10002/",
+                "name": "Jane Smith",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10002",
+                "memberPhoto": null
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000003",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10003",
+                "email": "user3@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10003/",
+                "name": "Alex Johnson",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10003",
+                "memberPhoto": {
+                  "baseUrl": "https://dummyimage.com/",
+                  "highResUrl": "https://dummyimage.com/photo2_highres.jpeg",
+                  "id": "photo2",
+                  "standardUrl": "https://dummyimage.com/photo2.jpeg",
+                  "thumbUrl": "https://dummyimage.com/photo2_thumb.jpeg"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000004",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10004",
+                "email": "user4@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10004/",
+                "name": "Chris Lee",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10004",
+                "memberPhoto": null
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000005",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10005",
+                "email": "user5@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10005/",
+                "name": "Taylor Moore",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10005",
+                "memberPhoto": {
+                  "baseUrl": "https://dummyimage.com/",
+                  "highResUrl": "https://dummyimage.com/photo3_highres.jpeg",
+                  "id": "photo3",
+                  "standardUrl": "https://dummyimage.com/photo3.jpeg",
+                  "thumbUrl": "https://dummyimage.com/photo3_thumb.jpeg"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000006",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10006",
+                "email": "user6@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10006/",
+                "name": "Sam Walker",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10006",
+                "memberPhoto": {
+                  "baseUrl": "https://dummyimage.com/",
+                  "highResUrl": "https://dummyimage.com/photo4_highres.jpeg",
+                  "id": "photo4",
+                  "standardUrl": "https://dummyimage.com/photo4.jpeg",
+                  "thumbUrl": "https://dummyimage.com/photo4_thumb.jpeg"
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "1000000007",
+              "isFirstEvent": false,
+              "isHost": false,
+              "member": {
+                "id": "10007",
+                "email": "user7@example.com",
+                "gender": null,
+                "memberUrl": "https://www.example.com/members/10007/",
+                "name": "Jordan Kim",
+                "state": "",
+                "status": "ACTIVE",
+                "username": "user10007",
+                "memberPhoto": {
+                  "baseUrl": "https://dummyimage.com/",
+                  "highResUrl": "https://dummyimage.com/photo5_highres.jpeg",
+                  "id": "photo5",
+                  "standardUrl": "https://dummyimage.com/photo5.jpeg",
+                  "thumbUrl": "https://dummyimage.com/photo5_thumb.jpeg"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
