@@ -1,5 +1,7 @@
 package com.vaadin.demo.application.services.meetup;
 
+import org.springframework.web.client.RestClient;
+
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
@@ -45,4 +47,7 @@ public interface MeetupService {
     String getMeInGroup() ;
 
     String getMyGroups() ;
+
+    // diese Methode kommt in Zukunft weg, jetzt fuer entwicklung ok.
+    String query(String query) ;
 }
