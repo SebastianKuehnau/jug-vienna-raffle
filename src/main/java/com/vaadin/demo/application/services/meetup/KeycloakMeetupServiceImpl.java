@@ -135,8 +135,6 @@ public class KeycloakMeetupServiceImpl implements MeetupService {
     }
   }
 
-
-
   // diese Methode kommt in Zukunft weg, jetzt fuer entwicklung ok.
   public String query(String query) {
     String token = getAccessToken();
