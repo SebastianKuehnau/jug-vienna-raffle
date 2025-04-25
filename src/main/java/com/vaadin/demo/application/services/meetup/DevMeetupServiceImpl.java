@@ -36,6 +36,11 @@ public class DevMeetupServiceImpl implements MeetupService {
         }
     }
 
+    @Override
+    public Optional<MeetupEventWithRSVPs> getEventWithRSVPs(String meetupEventId) {
+        return Optional.empty();
+    }
+
     private static MeetupEvent extractMeetupEvent(JsonNode eventNode) {
         var id = eventNode.path("id").asText();
         var token = eventNode.path("token").asText();
@@ -60,7 +65,7 @@ public class DevMeetupServiceImpl implements MeetupService {
             memberSet.add(member);
         });
 
-        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description, memberSet);
+        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description, eventUrl, status, memberSet);
         return event;
     }
 

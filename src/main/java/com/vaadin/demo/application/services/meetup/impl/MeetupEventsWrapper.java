@@ -62,7 +62,9 @@ public class MeetupEventsWrapper {
     public String status;
 
     public MeetupEvent toRecord() {
-      return new MeetupEvent(id, token, title, dateTime, description ,eventUrl, status);
+
+      //TODO: members needs to be fetched as well
+      return new MeetupEvent(id, token, title, dateTime, description ,eventUrl, status, Set.of());
     }
   }
 }
