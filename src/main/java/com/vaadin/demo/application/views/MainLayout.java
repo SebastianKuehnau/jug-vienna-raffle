@@ -14,6 +14,8 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.menu.MenuConfiguration;
@@ -30,6 +32,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -77,15 +81,22 @@ public class MainLayout extends AppLayout {
 
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         menuEntries.forEach(entry -> {
-            if (entry.icon() != null) {
-                nav.addItem(new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon())));
-            } else {
-                nav.addItem(new SideNavItem(entry.title(), entry.path()));
-            }
+            SideNavItem sideNavItem = createSideNavItem(entry);
+            nav.addItem(sideNavItem);
         });
+
 
         return nav;
     }
+
+    private SideNavItem createSideNavItem(MenuEntry entry) {
+        SideNavItem sideNavItem = entry.icon() != null
+                ? new SideNavItem(entry.title(), entry.path(), new SvgIcon(entry.icon()))
+                : new SideNavItem(entry.title(), entry.path());
+        sideNavItem.setMatchNested(true);
+        return sideNavItem;
+    }
+
 
     public byte[] recoverImageFromUrl(String urlText) {
         try {

@@ -10,7 +10,7 @@ public interface MeetupService {
 
     Optional<MeetupEvent> getEvent(String meetupEventId);
 
-    record MeetupEvent(String id, String token, String title, OffsetDateTime dateTime, String description) {
+    record MeetupEvent(String id, String token, String title, OffsetDateTime dateTime, String description, Set<Member> members) {
     }
 
     Set<MeetupEvent> getEvents();
@@ -40,6 +40,10 @@ public interface MeetupService {
             String memberUrl,
             String memberPhotoUrl
     ) {
+    }
+
+    record Member(String id, String name, String email, String rsvp_id, Boolean isOrganizer, Boolean hasEnteredRaffle) {
+
     }
 
     MeResponse getMe() ;

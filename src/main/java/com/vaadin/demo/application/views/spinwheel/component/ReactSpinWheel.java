@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.react.ReactAdapterComponent;
+import com.vaadin.flow.function.SerializableConsumer;
 
 import java.util.List;
 
@@ -17,9 +18,9 @@ public class ReactSpinWheel extends ReactAdapterComponent implements HasSize {
         setState("items", itemList);
     }
 
-    public void addOnFinishSpin() {
+    public void addOnFinishSpin(SerializableConsumer<String> consumer) {
         getElement().addEventListener("onFinishSpin", event -> {
-            System.out.println(event.getEventData());
+            consumer.accept(event.getEventData().getString("event.detail"));
         }).addEventData("event.detail");
     }
 

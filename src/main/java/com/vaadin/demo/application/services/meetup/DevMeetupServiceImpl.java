@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,7 +23,7 @@ public class DevMeetupServiceImpl implements MeetupService {
     @Override
     public Optional<MeetupEvent> getEvent(String meetupEventId) {
         try {
-            String json = MeetupMockData.eventMap.get(meetupEventId);
+            String json = readResourceFile("mock/getEventWithRSVP_"+meetupEventId+".json");
             ObjectMapper mapper = new ObjectMapper();
 
             JsonNode root = mapper.readTree(json);
@@ -39,16 +43,33 @@ public class DevMeetupServiceImpl implements MeetupService {
         var dateTime = OffsetDateTime.parse(eventNode.path("dateTime").asText());
         var description = eventNode.path("description").asText();
 
-        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description);
+        var memberSet = new HashSet<Member>();
+        eventNode.path("rsvps").path("edges").forEach(jsonNode -> {
+            JsonNode node = jsonNode.path("node");
+            var rsvp_id = node.path("id").asText();
+            var rsvp_isHost = node.path("isHost").asBoolean(false);
+
+            JsonNode memberNode = node.path("member");
+            var member_id = memberNode.path("id").asText();
+            var member_name = memberNode.path("name").asText();
+            var member_email = memberNode.path("email").asText();
+
+            var member = new Member(member_id, member_name, member_email, rsvp_id, rsvp_isHost, false);
+            memberSet.add(member);
+        });
+
+        MeetupEvent event = new MeetupEvent(id, token, title, dateTime, description, memberSet);
         return event;
     }
 
     @Override
     public Set<MeetupEvent> getEvents() {
+
         // Parse den statischen JSON-String und erstelle MeetupEvent-Objekte
         ObjectMapper mapper = new ObjectMapper();
         try {
-            JsonNode root = mapper.readTree(MeetupMockData.events);
+            String json = readResourceFile("mock/getEvents.json");
+            JsonNode root = mapper.readTree(json);
             JsonNode edges = root.path("data").path("groupByUrlname").path("events").path("edges");
 
             Set<MeetupEvent> events = new HashSet<>();
@@ -83,5 +104,12 @@ public class DevMeetupServiceImpl implements MeetupService {
     @Override
     public String query(String query) {
         return "";
+    }
+
+    private String readResourceFile(String fileName) throws IOException {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
+            if (is == null) throw new FileNotFoundException("Resource not found: " + fileName);
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }

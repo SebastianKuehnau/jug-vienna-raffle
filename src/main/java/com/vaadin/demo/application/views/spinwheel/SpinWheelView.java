@@ -26,10 +26,9 @@ public class SpinWheelView extends VerticalLayout {
             itemList.add("Item " + i);
         }
         reactSpinWheel.setItems(itemList);
-        reactSpinWheel.addOnFinishSpin();
+        reactSpinWheel.addOnFinishSpin(s -> {});
         add(reactSpinWheel);
 
         setSizeFull();
-
     }
 }

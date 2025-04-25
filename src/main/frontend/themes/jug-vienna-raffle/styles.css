@@ -1,2 +1,7 @@
 @import url('./main-layout.css');
 @import url('./views/master-detail-view.css');
+
+
+vaadin-combo-box-item.disabled {
+    color: var(--lumo-disabled-text-color);
+}

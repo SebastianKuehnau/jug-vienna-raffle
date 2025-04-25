@@ -1,12 +1,13 @@
 package com.vaadin.demo.application.data;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Data
 @Entity
 public class Prize extends AbstractEntity {
@@ -17,7 +18,7 @@ public class Prize extends AbstractEntity {
 
     @ManyToOne
     @JoinColumn(name = "raffle_id")
+    @ToString.Exclude
     private Raffle raffle;
-
 
 }
