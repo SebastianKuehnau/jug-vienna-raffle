@@ -1,5 +1,11 @@
 package com.vaadin.demo.application.services.meetup;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaadin.demo.application.services.meetup.impl.MeetupEventWithRsvpWrapper;
+import com.vaadin.demo.application.services.meetup.impl.GetEventWrapper;
+import com.vaadin.demo.application.services.meetup.impl.MeetupEventsWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.security.core.Authentication;
@@ -7,13 +13,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.Optional;
 import java.util.Set;
 
 public class KeycloakMeetupServiceImpl implements MeetupService {
+
   private final HttpSyncGraphQlClient httpSyncGraphQlClient;
   private RestClient restClient;
   private final OAuth2AuthorizedClientService authorizedClientService;
@@ -49,16 +55,52 @@ public class KeycloakMeetupServiceImpl implements MeetupService {
   }
 
 
+
+
   @Override
   public Optional<MeetupEvent> getEvent(String meetupEventId) {
-  //TODO: needs to be implemented
-    return Optional.empty();
+    var query = "query { event(id:\"" + meetupEventId + "\") { id dateTime title description eventType eventUrl status token }  }";
+    var body =   queryNew(query);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.registerModule(new JavaTimeModule());
+      return Optional.ofNullable(GetEventWrapper.parse(body, mapper));
+
+    } catch (RuntimeException e) {
+      e.printStackTrace();;
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<MeetupEventWithRSVPs> getEventWithRSVPs(String meetupEventId) {
+
+    var query = "query { event(id:\"" + meetupEventId + "\") { id dateTime title description eventType eventUrl status token rsvps (first: 300) { edges { node { id isFirstEvent isHost member { id email gender memberUrl name state status username memberPhoto { baseUrl highResUrl id standardUrl thumbUrl }  }} }  }  }}";
+
+    var body = queryNew(query);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.registerModule(new JavaTimeModule());
+      return Optional.ofNullable(MeetupEventWithRsvpWrapper.parse(body, mapper));
+
+    } catch (RuntimeException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
   public Set<MeetupEvent> getEvents() {
-    //TODO: needs to be implemented
-    return Set.of();
+    var query = "query { groupByUrlname (urlname: \"java-vienna\") { id events { edges { node { id token title dateTime description eventType eventUrl status }} }  } }";
+
+    var body = queryNew(query);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.registerModule(new JavaTimeModule());
+      MeetupEventsWrapper wrapper = mapper.readValue(body, MeetupEventsWrapper.class);
+      return wrapper.getEvents();
+    } catch (JsonProcessingException e) {
+      return Set.of();
+    }
   }
 
   public MeResponse getMe() {
@@ -136,7 +178,7 @@ public class KeycloakMeetupServiceImpl implements MeetupService {
   }
 
   // diese Methode kommt in Zukunft weg, jetzt fuer entwicklung ok.
-  public String query(String query) {
+  public String legacyQuery(String query) {
     String token = getAccessToken();
 
     RestClient authClient = this.restClient.mutate()
@@ -153,5 +195,19 @@ public class KeycloakMeetupServiceImpl implements MeetupService {
         .body(String.class);
   }
 
+  @Override
+  public String queryNew(String query) {
+    String token = getAccessToken();
+    RestClient authClient = this.restClient.mutate()
+        .defaultHeader("Authorization", "Bearer " + token)
+        .build();
+    query = query.replaceAll("\r\n", " ").replaceAll("\n", " ");
 
+    return authClient
+        .post()
+        .uri("/meetup-proxy/gql-ext")
+        .body(new GraphQLQuery(query))
+        .retrieve()
+        .body(String.class);
+  }
 }

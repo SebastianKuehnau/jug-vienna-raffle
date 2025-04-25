@@ -1,8 +1,7 @@
 package com.vaadin.demo.application.services.meetup;
 
-import org.springframework.web.client.RestClient;
-
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -10,8 +9,23 @@ public interface MeetupService {
 
     Optional<MeetupEvent> getEvent(String meetupEventId);
 
-    record MeetupEvent(String id, String token, String title, OffsetDateTime dateTime, String description, Set<Member> members) {
+    Optional<MeetupEventWithRSVPs> getEventWithRSVPs(String meetupEventId);
+
+    record MeetupEvent(String id,
+                       String token,
+                       String title,
+                       OffsetDateTime dateTime,
+                       String description,
+                       String eventUrl,
+                       String status,
+                       Set<Member> members) {
     }
+
+    record MemberPhoto(String id, String baseUrl, String highResUrl, String standardUrl, String thumbUrl) {}
+
+    record RSVP(String id, String email, String gender, String memberUrl, String name, String state, String status, String username, MemberPhoto memberPhoto) { }
+
+    record MeetupEventWithRSVPs(String id, String token, String title, OffsetDateTime dateTime, String description, List<RSVP> rsvps) { }
 
     Set<MeetupEvent> getEvents();
 
@@ -53,5 +67,7 @@ public interface MeetupService {
     String getMyGroups() ;
 
     // diese Methode kommt in Zukunft weg, jetzt fuer entwicklung ok.
-    String query(String query) ;
+    String legacyQuery(String query) ;
+
+    String queryNew(String query) ;
 }

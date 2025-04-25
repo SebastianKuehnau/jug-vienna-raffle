@@ -42,6 +42,8 @@ public class DevMeetupServiceImpl implements MeetupService {
         var title = eventNode.path("title").asText();
         var dateTime = OffsetDateTime.parse(eventNode.path("dateTime").asText());
         var description = eventNode.path("description").asText();
+        var eventUrl = eventNode.path("eventUrl").asText();
+        var status = eventNode.path("status").asText();
 
         var memberSet = new HashSet<Member>();
         eventNode.path("rsvps").path("edges").forEach(jsonNode -> {
@@ -64,7 +66,6 @@ public class DevMeetupServiceImpl implements MeetupService {
 
     @Override
     public Set<MeetupEvent> getEvents() {
-
         // Parse den statischen JSON-String und erstelle MeetupEvent-Objekte
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -102,7 +103,12 @@ public class DevMeetupServiceImpl implements MeetupService {
     }
 
     @Override
-    public String query(String query) {
+    public String legacyQuery(String query) {
+        return "";
+    }
+
+    @Override
+    public String queryNew(String query) {
         return "";
     }
 
