@@ -87,8 +87,8 @@ public class RaffleServiceAdapter implements RafflePort {
         }
         
         // Get the actual MeetupEvent entity from the database
-        MeetupEvent eventEntity = meetupEventRepository.findById(eventRecord.id())
-            .orElseThrow(() -> new IllegalArgumentException("Event not found: " + eventRecord.id()));
+        MeetupEvent eventEntity = meetupEventRepository.findByMeetupId(eventRecord.meetupId())
+            .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + eventRecord.meetupId()));
         
         Raffle raffle = new Raffle();
         raffle.setMeetup_event_id(eventRecord.meetupId());

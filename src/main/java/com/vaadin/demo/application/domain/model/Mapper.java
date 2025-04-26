@@ -113,6 +113,7 @@ public class Mapper {
         return new RaffleRecord(
             entity.getId(),
             toEventRecord(entity.getEvent()),
+            entity.getMeetup_event_id(),
             prizes
         );
     }

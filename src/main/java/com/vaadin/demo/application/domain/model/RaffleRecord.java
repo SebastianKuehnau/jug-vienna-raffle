@@ -8,12 +8,13 @@ import java.util.List;
 public record RaffleRecord(
     Long id,
     EventRecord event,
+    String meetupId,
     List<PrizeRecord> prizes
 ) {
     /**
      * Create a simple raffle with minimal details
      */
-    public static RaffleRecord simple(Long id, EventRecord event) {
-        return new RaffleRecord(id, event, List.of());
+    public static RaffleRecord simple(Long id, EventRecord event, String meetupId) {
+        return new RaffleRecord(id, event, meetupId, List.of());
     }
 }

@@ -4,8 +4,10 @@ import com.vaadin.demo.application.data.MeetupEvent;
 import com.vaadin.demo.application.data.Participant;
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.repository.MeetupEventRepository;
 import com.vaadin.demo.application.repository.PrizeRepository;
 import com.vaadin.demo.application.repository.RaffleRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class RaffleService {
     private final RaffleRepository raffleRepository;
     private final PrizeRepository prizeRepository;
     private final com.vaadin.demo.application.adapter.MeetupServiceAdapter meetupService;
+    private final MeetupEventRepository meetupEventRepository;
 
     @Transactional(readOnly = true)
     public Optional<Raffle> getRaffleById(Long id) {
@@ -66,15 +69,19 @@ public class RaffleService {
     }
 
     @Transactional
-    public Raffle createRaffle(MeetupEvent event) {
+    public Raffle createRaffle(EventRecord eventRecord) {
+        // First convert the domain eventRecord to a JPA entity
+        MeetupEvent meetupEvent = meetupEventRepository.findByMeetupId(eventRecord.meetupId())
+                .orElseThrow(() -> new IllegalArgumentException("MeetupEvent not found with ID: " + eventRecord.meetupId()));
+        
         // Check if a raffle already exists for this event
-        if (getRaffleByMeetupEventId(event.getMeetupId()).isPresent()) {
+        if (getRaffleByMeetupEventId(meetupEvent.getMeetupId()).isPresent()) {
             throw new IllegalStateException("A raffle already exists for this event");
         }
         
         Raffle raffle = new Raffle();
-        raffle.setMeetup_event_id(event.getMeetupId());
-        raffle.setEvent(event);
+        raffle.setMeetup_event_id(meetupEvent.getMeetupId());
+        raffle.setEvent(meetupEvent);
         return saveRaffle(raffle);
     }
 
