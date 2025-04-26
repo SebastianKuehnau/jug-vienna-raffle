@@ -3,6 +3,7 @@ package com.vaadin.demo.application.views.admin.details;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.services.meetup.MeetupService;
+import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.html.Span;
@@ -68,14 +69,14 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         setPadding(false);
     }
 
-    private void updateContent(MeetupService.MeetupEvent event) {
+    private void updateContent(EventRecord event) {
         titleField.setValue(event.title());
-        dateTimeField.setValue(event.dateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        dateTimeField.setValue(event.eventDate().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         descriptionTextArea.withMarkDown(event.description());
-        tokenField.setValue(event.token());
+        tokenField.setValue(""); // No token field in the domain model
         
         // Update meetup ID and sync button
-        this.currentMeetupEventId = event.id();
+        this.currentMeetupEventId = event.meetupId();
         
         // Find the sync button and update its meetup ID
         getChildren().forEach(component -> {
@@ -95,7 +96,7 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         RouteParameters parameters = event.getRouteParameters();
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
                 .flatMap(raffleId -> raffleService.getRaffleById(Long.parseLong(raffleId)))
-                .flatMap(raffle -> meetupService.getEvent(raffle.getMeetup_event_id()))
+                .flatMap(raffle -> meetupService.getEventByMeetupId(raffle.meetupId()))
                 .ifPresent(this::updateContent);
     }
 }
