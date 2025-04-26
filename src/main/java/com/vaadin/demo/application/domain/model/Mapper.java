@@ -5,6 +5,8 @@ import com.vaadin.demo.application.data.Member;
 import com.vaadin.demo.application.data.Participant;
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
+// Import Java class for API models
+import com.vaadin.demo.application.services.meetup.MeetupService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +16,23 @@ import java.util.stream.Collectors;
  */
 public class Mapper {
 
+    /**
+     * Convert from API MeetupEvent to domain EventRecord 
+     */
+    public static EventRecord toEventRecord(MeetupService.MeetupEvent apiEvent) {
+        if (apiEvent == null) return null;
+        
+        return new EventRecord(
+            null, // No ID since this is coming from API
+            apiEvent.id(),
+            apiEvent.title(),
+            apiEvent.description(),
+            apiEvent.dateTime(),
+            null, // No venue in API model
+            apiEvent.eventUrl()
+        );
+    }
+    
     /**
      * Convert JPA Member to domain MemberRecord
      */
@@ -39,9 +58,9 @@ public class Mapper {
             entity.getMeetupId(),
             entity.getTitle(),
             entity.getDescription(),
-            entity.getEventDate(),
-            entity.getVenue(),
-            entity.getLink()
+            entity.getDateTime(),
+            null, // venue is not in the entity
+            entity.getEventUrl()
         );
     }
     
