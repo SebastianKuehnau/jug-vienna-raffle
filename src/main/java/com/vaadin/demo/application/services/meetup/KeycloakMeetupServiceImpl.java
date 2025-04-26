@@ -78,6 +78,7 @@ public class KeycloakMeetupServiceImpl implements MeetupService {
     var query = "query { event(id:\"" + meetupEventId + "\") { id dateTime title description eventType eventUrl status token rsvps (first: 300) { edges { node { id isFirstEvent isHost member { id email gender memberUrl name state status username memberPhoto { baseUrl highResUrl id standardUrl thumbUrl }  }} }  }  }}";
 
     var body = queryNew(query);
+    System.out.println(body);
     try {
       ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new JavaTimeModule());

@@ -1,42 +1,167 @@
 package com.vaadin.demo.application.views.admin.details;
 
+import com.vaadin.demo.application.data.Member;
+import com.vaadin.demo.application.data.MeetupEvent;
+import com.vaadin.demo.application.data.Participant;
+import com.vaadin.demo.application.services.MeetupDataService;
 import com.vaadin.demo.application.services.RaffleService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
+import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Route(value = "participants", layout = DetailsMainLayout.class)
+@com.vaadin.flow.server.auth.AnonymousAllowed
 public class ParticipantsSubView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final Grid<MeetupService.Member> grid;
+    private final Grid<ParticipantViewModel> grid;
     private final RaffleService raffleService;
-    private MeetupService meetupService;
+    private final MeetupService meetupService;
+    private final MeetupDataService meetupDataService;
+    private String currentMeetupEventId;
+    private Long currentRaffleId;
 
-    public ParticipantsSubView(RaffleService raffleService, MeetupService meetupService) {
-        this.raffleService = raffleService;
-        this.meetupService = meetupService;
-        grid = new Grid<>(MeetupService.Member.class);
-        grid.setColumns("name", "email", "isOrganizer", "hasEnteredRaffle");
-        add(grid);
+    // View model for participants
+    public static class ParticipantViewModel {
+        private final String name;
+        private final String email;
+        private final boolean organizer;  // Note: field name matches method without "is" prefix
+        private final boolean enteredRaffle;  // Note: field name matches method without "has" prefix
+        private final Participant.RSVPStatus rsvpStatus;
+        private final Participant.AttendanceStatus attendanceStatus;
+
+        public ParticipantViewModel(Participant participant) {
+            Member member = participant.getMember();
+            this.name = member != null ? member.getName() : "";
+            this.email = member != null ? member.getEmail() : "";
+            this.organizer = participant.getIsOrganizer() != null && participant.getIsOrganizer();
+            this.enteredRaffle = participant.getHasEnteredRaffle() != null && participant.getHasEnteredRaffle();
+            this.rsvpStatus = participant.getRsvpStatus();
+            this.attendanceStatus = participant.getAttendanceStatus();
+        }
+
+        public String getName() { return name; }
+        public String getEmail() { return email; }
+        public boolean isOrganizer() { return organizer; }
+        public boolean hasEnteredRaffle() { return enteredRaffle; }
+        public Participant.RSVPStatus getRsvpStatus() { return rsvpStatus; }
+        public Participant.AttendanceStatus getAttendanceStatus() { return attendanceStatus; }
     }
 
-    public void updateContent(Set<MeetupService.Member> members) {
-        grid.setItems(members);
+    public ParticipantsSubView(RaffleService raffleService, MeetupService meetupService, MeetupDataService meetupDataService) {
+        this.raffleService = raffleService;
+        this.meetupService = meetupService;
+        this.meetupDataService = meetupDataService;
+        
+        // Create header layout with buttons
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        
+        SyncMembersButton syncButton = new SyncMembersButton(meetupDataService, "");
+        syncButton.setVisible(false); // Hide until we have a meetup ID
+        
+        Button refreshButton = new Button("Refresh");
+        refreshButton.addClickListener(e -> refreshParticipants());
+        refreshButton.setVisible(false); // Hide until we have data to refresh
+        
+        buttonLayout.add(syncButton, refreshButton);
+        
+        grid = new Grid<>(ParticipantViewModel.class);
+        
+        // Define columns explicitly to match the exact property names
+        grid.addColumn(ParticipantViewModel::getName).setHeader("Name");
+        grid.addColumn(ParticipantViewModel::getEmail).setHeader("Email");
+        grid.addColumn(ParticipantViewModel::isOrganizer).setHeader("Organizer");
+        grid.addColumn(ParticipantViewModel::hasEnteredRaffle).setHeader("Entered Raffle");
+        grid.addColumn(ParticipantViewModel::getRsvpStatus).setHeader("RSVP Status");
+        grid.addColumn(ParticipantViewModel::getAttendanceStatus).setHeader("Attendance");
+        
+        add(buttonLayout, grid);
+        setSizeFull();
+    }
+
+    private void refreshParticipants() {
+        if (currentMeetupEventId != null) {
+            meetupDataService.getMeetupEventByMeetupId(currentMeetupEventId)
+                .ifPresent(event -> {
+                    List<Participant> participants = meetupDataService.getParticipantsForEvent(event);
+                    updateContent(participants);
+                    
+                    // Update the button
+                    getChildren()
+                        .filter(c -> c instanceof HorizontalLayout)
+                        .findFirst()
+                        .ifPresent(layout -> {
+                            ((HorizontalLayout)layout).getChildren()
+                                .filter(c -> c instanceof Button && !(c instanceof SyncMembersButton))
+                                .findFirst()
+                                .ifPresent(c -> c.setVisible(true));
+                        });
+                });
+        }
+    }
+
+    public void updateContent(List<Participant> participants) {
+        List<ParticipantViewModel> viewModels = participants.stream()
+            .map(ParticipantViewModel::new)
+            .collect(Collectors.toList());
+        grid.setItems(viewModels);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         RouteParameters parameters = event.getRouteParameters();
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
-                .flatMap(raffleId -> raffleService.get(Long.parseLong(raffleId)))
-                .flatMap(raffle -> meetupService.getEvent(raffle.getMeetup_event_id()))
-                .map(meetupEvent -> meetupEvent.members())
-                .ifPresent(this::updateContent);
+                .flatMap(raffleId -> {
+                    this.currentRaffleId = Long.parseLong(raffleId);
+                    return raffleService.get(this.currentRaffleId);
+                })
+                .ifPresent(raffle -> {
+                    // Store Meetup ID for sync button
+                    this.currentMeetupEventId = raffle.getMeetup_event_id();
+                    
+                    // Update the sync button
+                    getChildren()
+                        .filter(c -> c instanceof HorizontalLayout)
+                        .findFirst()
+                        .ifPresent(layout -> {
+                            HorizontalLayout buttonLayout = (HorizontalLayout) layout;
+                            buttonLayout.getChildren()
+                                .filter(c -> c instanceof SyncMembersButton)
+                                .findFirst()
+                                .ifPresent(c -> {
+                                    buttonLayout.remove(c);
+                                    SyncMembersButton newSyncButton = new SyncMembersButton(
+                                            meetupDataService, 
+                                            currentMeetupEventId
+                                    );
+                                    buttonLayout.addComponentAtIndex(0, newSyncButton);
+                                });
+                        });
+                    
+                    // Get button for refresh
+                    getChildren()
+                        .filter(c -> c instanceof HorizontalLayout)
+                        .findFirst()
+                        .ifPresent(layout -> {
+                            ((HorizontalLayout)layout).getChildren()
+                                .filter(c -> c instanceof Button && !(c instanceof SyncMembersButton))
+                                .findFirst()
+                                .ifPresent(c -> c.setVisible(true));
+                        });
+                    
+                    // Refresh participants from database
+                    refreshParticipants();
+                });
     }
 }

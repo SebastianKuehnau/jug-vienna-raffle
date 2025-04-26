@@ -51,7 +51,8 @@ public class SecurityConfiguration extends VaadinWebSecurity {
                 "/oauth2/**",
                 "/vaadinServlet/**",
                 "/VAADIN/**",
-                "/public/**"
+                "/public/**",
+                "/api/data/init" // Allow access to data initialization endpoint
             ).permitAll()
             .requestMatchers("/**").authenticated()
         );

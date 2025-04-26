@@ -1,7 +1,9 @@
 package com.vaadin.demo.application.views.admin.details;
 
+import com.vaadin.demo.application.services.MeetupDataService;
 import com.vaadin.demo.application.services.RaffleService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
+import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,6 +20,7 @@ import org.vaadin.firitin.components.RichText;
 import java.time.format.DateTimeFormatter;
 
 @Route(value = "details", layout = DetailsMainLayout.class)
+@com.vaadin.flow.server.auth.AnonymousAllowed
 public class DetailsSubView extends VerticalLayout implements BeforeEnterObserver {
 
     private final RichText descriptionTextArea = new RichText();
@@ -26,10 +29,13 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
     private final TextField tokenField = new TextField("Token");
     private final RaffleService raffleService;
     private final MeetupService meetupService;
+    private final MeetupDataService meetupDataService;
+    private String currentMeetupEventId;
 
-    public DetailsSubView(RaffleService raffleService, MeetupService meetupService) {
+    public DetailsSubView(RaffleService raffleService, MeetupService meetupService, MeetupDataService meetupDataService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
+        this.meetupDataService = meetupDataService;
 
         var descriptionTitle = new Span("Description");
         descriptionTitle.addClassNames(LumoUtility.FontWeight.NORMAL, LumoUtility.FontSize.SMALL,
@@ -50,8 +56,12 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         var componentLayout = new HorizontalLayout();
         componentLayout.add(dateTimeField, tokenField);
         componentLayout.setPadding(false);
-
-        add(componentLayout, descriptionTitle);
+        
+        // Add Sync Members button
+        SyncMembersButton syncButton = new SyncMembersButton(meetupDataService, "");
+        syncButton.setVisible(false); // Hide until we have a meetup ID
+        
+        add(componentLayout, syncButton, descriptionTitle);
         addAndExpand(scroller);
         setJustifyContentMode(JustifyContentMode.START);
 
@@ -63,6 +73,20 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         dateTimeField.setValue(event.dateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         descriptionTextArea.withMarkDown(event.description());
         tokenField.setValue(event.token());
+        
+        // Update meetup ID and sync button
+        this.currentMeetupEventId = event.id();
+        
+        // Find the sync button and update its meetup ID
+        getChildren().forEach(component -> {
+            if (component instanceof SyncMembersButton) {
+                SyncMembersButton syncButton = (SyncMembersButton) component;
+                // We need to remove the old button and add a new one
+                remove(syncButton);
+                SyncMembersButton newSyncButton = new SyncMembersButton(meetupDataService, currentMeetupEventId);
+                addComponentAtIndex(2, newSyncButton); // Same position as before
+            }
+        });
     }
 
     @Override

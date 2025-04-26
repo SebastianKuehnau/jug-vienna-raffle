@@ -1,8 +1,6 @@
 # JUG Vienna Raffle
 
-A web application for managing and conducting raffles at Java User Group Vienna meetups. 
-The application integrates with Meetup.com to fetch event information and attendees, 
-allowing organizers to create raffles with prizes and conduct them using an interactive spinning wheel.
+A web application for managing and conducting raffles at Java User Group Vienna meetups. The application integrates with Meetup.com to fetch event information and attendees, allowing organizers to create raffles with prizes and conduct them using an interactive spinning wheel.
 
 ## Features
 
@@ -16,7 +14,7 @@ allowing organizers to create raffles with prizes and conduct them using an inte
 
 - **Backend**: Java 17, Spring Boot 3.4.4, Spring Security with OAuth2
 - **Frontend**: Vaadin 24.7.2, React (for the Spin Wheel component)
-- **Database**: H2 Database (in-memory)
+- **Database**: PostgreSQL
 - **Authentication**: Keycloak integration
 
 ## Running the Application
@@ -24,17 +22,26 @@ allowing organizers to create raffles with prizes and conduct them using an inte
 ### Development Mode
 
 1. Clone the repository
-2. Run the application using Maven:
+2. Start PostgreSQL and run the application:
    ```
+   ./run-with-postgres.sh
+   ```
+   Or start PostgreSQL manually:
+   ```
+   docker-compose up -d postgres
    ./mvnw spring-boot:run
    ```
-   Or use the provided script:
+3. Initialize sample data (after the application starts):
    ```
-   ./05_run_mvn.sh
+   ./create-sample-data.sh
    ```
-3. Open [http://localhost:8080](http://localhost:8080) in your browser
+   Or using curl directly:
+   ```
+   curl -X POST http://localhost:8080/api/data/init
+   ```
+4. Open [http://localhost:8080](http://localhost:8080) in your browser
 
-For hot reload with code changes, run the application from your IDE using the "Debug using HotswapAgent" option with the Vaadin plugin.
+For hot reload with code changes, first ensure PostgreSQL is running, then run the application from your IDE using the "Debug using HotswapAgent" option with the Vaadin plugin.
 
 ### Production Mode
 
@@ -52,23 +59,28 @@ java -jar target/jug-vienna-raffle-1.0-SNAPSHOT.jar
 
 ### Docker Deployment
 
-Build Docker image:
+Deploy the complete application stack using Docker Compose:
 
 ```
+# Build the application first
 ./01_package_production.sh
 ./02_build_docker.sh
+
+# Start the entire stack (PostgreSQL and application)
+docker-compose up -d
+
+# Initialize sample data (after the application starts)
+./create-sample-data.sh
 ```
 
-Run Docker container:
+For manual deployment without Docker Compose:
 
 ```
-./03_run_docker.sh
-```
+# Start PostgreSQL
+docker run -d --name postgres -e POSTGRES_DB=jugviennaraffle -e POSTGRES_USER=juguser -e POSTGRES_PASSWORD=jugpassword -p 5432:5432 postgres:16-alpine
 
-Or manually:
-
-```
-docker run -p 8080:8080 jug-vienna-raffle:latest
+# Run the application
+docker run -p 8080:8080 --link postgres:postgres -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/jugviennaraffle -e SPRING_DATASOURCE_USERNAME=juguser -e SPRING_DATASOURCE_PASSWORD=jugpassword jug-vienna-raffle:latest
 ```
 
 ## Project Structure
@@ -89,12 +101,19 @@ docker run -p 8080:8080 jug-vienna-raffle:latest
 
 ## Configuration
 
-Configure Meetup.com integration and Keycloak authentication in `application.properties`.
+Configure the application in `application.properties`.
 
 Key settings:
-- `keycloak.host`: Keycloak host 
-- `keycloak.realm`: Keycloak realm
-- `spring.security.oauth2.client.registration.keycloak.client-id`: Client ID for authentication
+- **Database:**
+  - `spring.datasource.url`: PostgreSQL connection URL
+  - `spring.datasource.username`: Database username
+  - `spring.datasource.password`: Database password
+
+- **Keycloak:**
+  - `keycloak.host`: Keycloak host 
+  - `keycloak.realm`: Keycloak realm
+  - `spring.security.oauth2.client.registration.keycloak.client-id`: Client ID for authentication
+  - `spring.security.oauth2.client.registration.keycloak.client-secret`: Client secret (set via environment variable)
 
 ## Running Tests
 

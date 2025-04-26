@@ -23,7 +23,7 @@ public class User extends AbstractEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
     @Lob
-    @Column(length = 1000000)
+    @Column(columnDefinition = "bytea")
     private byte[] profilePicture;
 
     public String getUsername() {

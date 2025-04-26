@@ -34,7 +34,7 @@ public class PrizeDialog extends Dialog {
         binder = new Binder<>(Prize.class);
 
         binder.forField(nameField).bind(Prize::getName, Prize::setName);
-        binder.forField(winnerField).bind(Prize::getWinner, Prize::setWinner);
+        binder.forField(winnerField).bind(Prize::getWinnerName, Prize::setWinnerName);
 
         var cancelButton = new Button("Cancel", this::cancel);
         var saveButton = new Button("Save", this::save);

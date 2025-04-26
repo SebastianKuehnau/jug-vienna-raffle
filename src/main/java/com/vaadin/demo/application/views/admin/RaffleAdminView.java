@@ -2,9 +2,11 @@ package com.vaadin.demo.application.views.admin;
 
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.services.MeetupDataService;
 import com.vaadin.demo.application.services.RaffleService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.demo.application.views.admin.components.IconButton;
+import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.UI;
@@ -15,6 +17,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.data.renderer.LitRenderer;
@@ -31,28 +35,54 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @AnonymousAllowed
 @PageTitle( "Raffle Admin View")
 @Route("raffle-admin")
+@SuppressWarnings("serial")
 public class RaffleAdminView extends VerticalLayout {
 
     private final RaffleService raffleService;
     private final MeetupService meetupService;
     private final Grid<Raffle> raffleGrid;
 
-    public RaffleAdminView(RaffleService raffleService, MeetupService meetupService) {
+    private final MeetupDataService meetupDataService;
+
+    public RaffleAdminView(RaffleService raffleService, MeetupService meetupService, MeetupDataService meetupDataService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
+        this.meetupDataService = meetupDataService;
         add(new H1("Admin View"));
 
+        // Add "All Events" link
+        Button viewAllEventsButton = new Button("View All Events", VaadinIcon.LIST.create());
+        viewAllEventsButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("events")));
+        add(viewAllEventsButton);
+        
         raffleGrid = new Grid<>();
         raffleGrid.addColumn(Raffle::getMeetup_event_id).setHeader("Meetup Event ID");
-        raffleGrid.addColumn(raffle -> meetupService.getEvent(raffle.getMeetup_event_id()).get().title()).setHeader("Meetup Event Name");
+        raffleGrid.addColumn(raffle -> {
+            try {
+                return meetupService.getEvent(raffle.getMeetup_event_id()).get().title();
+            } catch (Exception e) {
+                return "Unknown Event";
+            }
+        }).setHeader("Meetup Event Name");
         raffleGrid.addColumn(createPrizeList()).setHeader("Prizes");
         raffleGrid.setItemsPageable(raffleService::list);
         raffleGrid.asSingleSelect().addValueChangeListener(this::raffleItemSelected);
         add(raffleGrid);
 
+        // Create button layout
+        var buttonLayout = new HorizontalLayout();
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        
+        // Add raffle button
         IconButton addButton = new IconButton(VaadinIcon.PLUS_CIRCLE.create(), this::addButtonClicked);
-        add(addButton);
-        setAlignSelf(Alignment.END, addButton);
+        
+        // Import Meetup events button
+        Button importMeetupButton = new Button("Import Meetup Events", VaadinIcon.DOWNLOAD.create());
+        importMeetupButton.addClickListener(this::importMeetupButtonClicked);
+        
+        buttonLayout.add(importMeetupButton, addButton);
+        add(buttonLayout);
     }
 
     private LitRenderer<Raffle> createPrizeList() {
@@ -108,7 +138,19 @@ public class RaffleAdminView extends VerticalLayout {
         verticalLayout.setPadding(false);
         dialog.add(verticalLayout);
         dialog.open();
-
+    }
+    
+    private void importMeetupButtonClicked(ClickEvent<Button> event) {
+        MeetupImportDialog importDialog = new MeetupImportDialog(
+                meetupService, 
+                meetupDataService, 
+                this::refreshGrid
+        );
+        importDialog.open();
+    }
+    
+    private void refreshGrid() {
+        raffleGrid.getDataProvider().refreshAll();
     }
 
     private String createTextRenderer(MeetupService.MeetupEvent meetupEvent) {

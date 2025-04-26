@@ -22,6 +22,7 @@ import java.util.Optional;
 
 @PageTitle( "JUG Vienna Raffle Spin Wheel")
 @Route("raffle-admin/spin-wheel")
+@com.vaadin.flow.server.auth.AnonymousAllowed
 public class SpinWheelView extends Div implements HasUrlParameter<Long> {
 
     private final PrizeService prizeService;
@@ -49,7 +50,9 @@ public class SpinWheelView extends Div implements HasUrlParameter<Long> {
             add(new H1("Winner: " + winner.name() + " (" + winner.id() + ")"));
             var acceptButton = new Button("Accept Price", e -> {
                 currentPrize.ifPresent(prize -> {
-                    prize.setWinner(winner.name() + " (" + winner.id() + ")");
+                    // We don't have a Participant object here, so we'll just set the winnerName
+                    // This will need to be fixed in a more comprehensive update
+                    prize.setWinnerName(winner.name() + " (" + winner.id() + ")");
                     prizeService.save(prize);
                 });
                 close();
@@ -65,7 +68,23 @@ public class SpinWheelView extends Div implements HasUrlParameter<Long> {
                     ButtonVariant.LUMO_ERROR,
                     ButtonVariant.LUMO_PRIMARY,
                     ButtonVariant.LUMO_LARGE);
-            add(new HorizontalLayout(declineButton, acceptButton));
+
+            var noShowButton = new Button("No show", e -> {
+               close();
+            });
+            noShowButton.addThemeVariants(
+                ButtonVariant.LUMO_WARNING,
+                ButtonVariant.LUMO_LARGE
+            );
+
+            var doesntMeetRequirementsButton = new Button("Doesn't meet requirements", e -> {
+                close();
+            });
+            doesntMeetRequirementsButton.addThemeVariants(
+                ButtonVariant.LUMO_WARNING,
+                ButtonVariant.LUMO_LARGE
+            );
+            add(new HorizontalLayout(declineButton, acceptButton, noShowButton, doesntMeetRequirementsButton));
             setModal(true);
             setCloseOnEsc(true);
             setCloseOnOutsideClick(true);

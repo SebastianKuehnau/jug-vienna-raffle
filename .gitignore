@@ -22,3 +22,14 @@ webpack.generated.js
 /src/main/environment-setup/
 
 .envrc
+
+# PostgreSQL data directory
+/postgres-data/
+
+.mvn
+src/test/resources/getEventWithRSVP_*
+src/test/resources/getEventWithRSVP.json
+*.graphql
+*.log
+
+src/main/bundles

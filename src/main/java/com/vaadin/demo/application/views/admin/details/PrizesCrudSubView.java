@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 
 @Route(value = "prizes", layout = DetailsMainLayout.class)
+@com.vaadin.flow.server.auth.AnonymousAllowed
 public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Grid<Prize> prizeGrid = new Grid<>(Prize.class);
@@ -49,7 +50,7 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
         var button = new Button("Start Raffle", VaadinIcon.SPINNER.create());
         button.addClickListener(event -> event.getSource().getUI()
                 .ifPresent(ui -> ui.navigate(SpinWheelView.class, prize.getId())));
-        button.setEnabled(prize.getWinner().isBlank());
+        button.setEnabled(prize.getWinnerName() == null || prize.getWinnerName().isBlank());
         button.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         return button;
     }

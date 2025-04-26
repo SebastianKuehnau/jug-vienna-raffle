@@ -5,6 +5,7 @@ import com.vaadin.demo.application.repository.RaffleRepository;
 import com.vaadin.demo.application.repository.SamplePersonRepository;
 import com.vaadin.demo.application.security.properties.KeycloakProperties;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.theme.Theme;
 import javax.sql.DataSource;
 
@@ -26,41 +27,12 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 @Theme(value = "jug-vienna-raffle")
 @ConfigurationPropertiesScan(basePackageClasses = KeycloakProperties.class)
+@Push
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-    @Bean
-    SqlDataSourceScriptDatabaseInitializer dataSourceScriptDatabaseInitializer(DataSource dataSource,
-            SqlInitializationProperties properties, SamplePersonRepository repository) {
-        // This bean ensures the database is only initialized when empty
-        return new SqlDataSourceScriptDatabaseInitializer(dataSource, properties) {
-            @Override
-            public boolean initializeDatabase() {
-                if (repository.count() == 0L) {
-                    return super.initializeDatabase();
-                }
-
-                return false;
-            }
-        };
-    }
-
-    @Bean
-    CommandLineRunner initDatabase(RaffleRepository repository) {
-        return args -> {
-            if (repository.count() == 0) {
-                repository.save(createRaffle("305897255"));
-                repository.save(createRaffle("305897281"));
-                repository.save(createRaffle("306898838"));
-            }
-        };
-    }
-
-    private Raffle createRaffle(String meetup_event_id) {
-        Raffle raffle = new Raffle();
-        raffle.setMeetup_event_id(meetup_event_id);
-        return raffle;
-    }
+    // Removed automatic data initialization - now using HTTP endpoint
+    // Use: curl -X POST http://localhost:8080/api/data/init
 }

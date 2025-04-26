@@ -14,6 +14,7 @@ import java.util.Optional;
 @PageTitle("Raffle Details")
 @RoutePrefix("raffle-admin/:" + DetailsMainLayout.RAFFLE_ID_PARAMETER)
 @ParentLayout(MainLayout.class)
+@com.vaadin.flow.server.auth.AnonymousAllowed
 public class DetailsMainLayout extends VerticalLayout implements RouterLayout, BeforeEnterObserver {
     public static final String RAFFLE_ID_PARAMETER = "raffleID";
 
