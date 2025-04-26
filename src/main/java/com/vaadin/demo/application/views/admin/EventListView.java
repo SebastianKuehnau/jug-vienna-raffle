@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.views.admin;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.model.EventRecord;
+import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.views.MainLayout;
@@ -43,7 +43,7 @@ public class EventListView extends VerticalLayout {
     private final RafflePort raffleService;
     private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
 
-    private final Grid<MeetupEvent> eventGrid = new Grid<>();
+    private final Grid<EventRecord> eventGrid = new Grid<>();
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -83,34 +83,33 @@ public class EventListView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        eventGrid.addColumn(MeetupEvent::getMeetupId).setHeader("Meetup ID").setWidth("120px").setFlexGrow(0);
-        eventGrid.addColumn(MeetupEvent::getTitle).setHeader("Title").setAutoWidth(true).setFlexGrow(1);
+        eventGrid.addColumn(EventRecord::meetupId).setHeader("Meetup ID").setWidth("120px").setFlexGrow(0);
+        eventGrid.addColumn(EventRecord::title).setHeader("Title").setAutoWidth(true).setFlexGrow(1);
 
         // Date/time column
         eventGrid.addColumn(event -> {
-            if (event.getDateTime() != null) {
-                return event.getDateTime().format(DATE_FORMATTER);
+            if (event.eventDate() != null) {
+                return event.eventDate().format(DATE_FORMATTER);
             } else {
                 return "N/A";
             }
         }).setHeader("Date/Time").setWidth("150px").setFlexGrow(0);
 
-        // Status column
-        eventGrid.addColumn(MeetupEvent::getStatus).setHeader("Status").setWidth("100px").setFlexGrow(0);
+        // No status column in the domain model, this is based on JPA entity fields
 
         // Action column with buttons
         eventGrid.addComponentColumn(event -> {
             HorizontalLayout buttonLayout = new HorizontalLayout();
 
-            // Sync Members button - This SyncMembersButton will need to be updated for the new architecture
-            SyncMembersButton syncButton = new SyncMembersButton(meetupService, event.getMeetupId());
+            // Sync Members button
+            SyncMembersButton syncButton = new SyncMembersButton(meetupService, event.meetupId());
             buttonLayout.add(syncButton);
 
             // Raffle button
-            Optional<Raffle> raffle = raffleService.getRaffleByMeetupEventId(event.getMeetupId());
+            Optional<RaffleRecord> raffle = raffleService.getRaffleByMeetupEventId(event.meetupId());
             if (raffle.isPresent()) {
                 Button viewButton = new Button("View Raffle", e -> {
-                    getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.get().getId() + "/details"));
+                    getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.get().id() + "/details"));
                 });
                 viewButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
                 buttonLayout.add(viewButton);
@@ -130,7 +129,7 @@ public class EventListView extends VerticalLayout {
     }
 
     private void refreshEvents() {
-        List<MeetupEvent> events = meetupService.getAllEvents();
+        List<EventRecord> events = meetupService.getAllEvents();
         eventGrid.setItems(events);
     }
 
@@ -143,10 +142,10 @@ public class EventListView extends VerticalLayout {
         importDialog.open();
     }
 
-    private void createRaffle(MeetupEvent event) {
+    private void createRaffle(EventRecord event) {
         try {
             // Check if raffle already exists
-            if (raffleService.getRaffleByMeetupEventId(event.getMeetupId()).isPresent()) {
+            if (raffleService.getRaffleByMeetupEventId(event.meetupId()).isPresent()) {
                 Notification.show("Raffle already exists for this event",
                         3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_WARNING);
@@ -154,10 +153,10 @@ public class EventListView extends VerticalLayout {
             }
 
             // Create new raffle using the service
-            Raffle raffle = raffleService.createRaffle(event);
+            RaffleRecord raffle = raffleService.createRaffle(event);
 
             // Show success notification
-            Notification.show("Raffle created for " + event.getTitle(),
+            Notification.show("Raffle created for " + event.title(),
                     3000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
@@ -165,7 +164,7 @@ public class EventListView extends VerticalLayout {
             refreshEvents();
 
             // Navigate to raffle details
-            getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.getId() + "/details"));
+            getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.id() + "/details"));
 
         } catch (Exception e) {
             Notification.show("Error creating raffle: " + e.getMessage(),
