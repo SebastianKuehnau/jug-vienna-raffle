@@ -2,8 +2,8 @@ package com.vaadin.demo.application.views.admin;
 
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
 import com.vaadin.demo.application.views.MainLayout;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
@@ -39,16 +39,16 @@ import java.util.Optional;
 @SuppressWarnings("serial")
 public class EventListView extends VerticalLayout {
 
-    private final MeetupPort meetupService;
-    private final RafflePort raffleService;
+    private final MeetupApplicationService meetupService;
+    private final RaffleApplicationService raffleService;
     private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
 
     private final Grid<EventRecord> eventGrid = new Grid<>();
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public EventListView(MeetupPort meetupService,
-                        RafflePort raffleService,
+    public EventListView(MeetupApplicationService meetupService,
+                        RaffleApplicationService raffleService,
                         com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient) {
         this.meetupService = meetupService;
         this.raffleService = raffleService;

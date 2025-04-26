@@ -3,7 +3,7 @@ package com.vaadin.demo.application.views.admin.details;
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
 import com.vaadin.demo.application.services.PrizeService;
 import com.vaadin.demo.application.views.admin.SpinWheelView;
 import com.vaadin.demo.application.views.admin.components.IconButton;
@@ -27,11 +27,11 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
 
     private final Grid<PrizeRecord> prizeGrid = new Grid<>(PrizeRecord.class);
 
-    private final RafflePort raffleService;
+    private final RaffleApplicationService raffleService;
 
     private RaffleRecord raffle;
 
-    public PrizesCrudSubView(RafflePort raffleService) {
+    public PrizesCrudSubView(RaffleApplicationService raffleService) {
         this.raffleService = raffleService;
 
         prizeGrid.setColumns("name", "winner");

@@ -5,8 +5,8 @@ import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord.RsvpStatus;
 import com.vaadin.demo.application.domain.model.ParticipantRecord.AttendanceStatus;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
 import com.vaadin.demo.application.views.admin.details.DetailsMainLayout;
 import com.vaadin.demo.application.views.admin.details.PrizesCrudSubView;
 import com.vaadin.demo.application.views.spinwheel.component.ReactSpinWheel;
@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 @com.vaadin.flow.server.auth.AnonymousAllowed
 public class SpinWheelView extends Div implements HasUrlParameter<Long> {
 
-    private final RafflePort raffleService;
-    private final MeetupPort meetupService;
+    private final RaffleApplicationService raffleService;
+    private final MeetupApplicationService meetupService;
     private final ReactSpinWheel reactSpinWheel;
 
     private Map<String, ParticipantRecord> participants = new HashMap<>();
     private Optional<PrizeRecord> currentPrize;
 
-    public SpinWheelView(RafflePort raffleService, MeetupPort meetupService) {
+    public SpinWheelView(RaffleApplicationService raffleService, MeetupApplicationService meetupService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
         

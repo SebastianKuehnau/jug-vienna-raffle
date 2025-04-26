@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.views.admin.components;
 
-import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -14,13 +14,13 @@ import com.vaadin.flow.component.notification.NotificationVariant;
  */
 public class SyncMembersButton extends Button {
 
-    private final MeetupPort meetupService;
+    private final MeetupApplicationService meetupService;
     private Runnable afterSyncAction;
     
     /**
      * Create a button for syncing members by Meetup event ID
      */
-    public SyncMembersButton(MeetupPort meetupService, String meetupEventId) {
+    public SyncMembersButton(MeetupApplicationService meetupService, String meetupEventId) {
         super("Sync Members", new Icon(VaadinIcon.REFRESH));
         this.meetupService = meetupService;
         
@@ -41,7 +41,7 @@ public class SyncMembersButton extends Button {
     /**
      * Create a button for syncing members by database event ID
      */
-    public SyncMembersButton(MeetupPort meetupService, Long eventId) {
+    public SyncMembersButton(MeetupApplicationService meetupService, Long eventId) {
         super("Sync Members", new Icon(VaadinIcon.REFRESH));
         this.meetupService = meetupService;
         

@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.views.admin.details;
 
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
@@ -28,15 +28,15 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
     private final TextField titleField = new TextField("Title");
     private final TextField dateTimeField = new TextField("Datetime");
     private final TextField tokenField = new TextField("Token");
-    private final RafflePort raffleService;
+    private final RaffleApplicationService raffleService;
     private final MeetupService meetupService;
-    private final MeetupPort meetupPort;
+    private final MeetupApplicationService meetupService2;
     private String currentMeetupEventId;
 
-    public DetailsSubView(RafflePort raffleService, MeetupService meetupService, MeetupPort meetupPort) {
+    public DetailsSubView(RaffleApplicationService raffleService, MeetupService meetupService, MeetupApplicationService meetupService2) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
-        this.meetupPort = meetupPort;
+        this.meetupService2 = meetupService2;
 
         var descriptionTitle = new Span("Description");
         descriptionTitle.addClassNames(LumoUtility.FontWeight.NORMAL, LumoUtility.FontSize.SMALL,
@@ -59,7 +59,7 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         componentLayout.setPadding(false);
         
         // Add Sync Members button
-        SyncMembersButton syncButton = new SyncMembersButton(meetupPort, "");
+        SyncMembersButton syncButton = new SyncMembersButton(meetupService2, "");
         syncButton.setVisible(false); // Hide until we have a meetup ID
         
         add(componentLayout, syncButton, descriptionTitle);
@@ -84,7 +84,7 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
                 SyncMembersButton syncButton = (SyncMembersButton) component;
                 // We need to remove the old button and add a new one
                 remove(syncButton);
-                SyncMembersButton newSyncButton = new SyncMembersButton(meetupPort, currentMeetupEventId);
+                SyncMembersButton newSyncButton = new SyncMembersButton(meetupService2, currentMeetupEventId);
                 addComponentAtIndex(2, newSyncButton); // Same position as before
             }
         });
@@ -96,7 +96,7 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         RouteParameters parameters = event.getRouteParameters();
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
                 .flatMap(raffleId -> raffleService.getRaffleById(Long.parseLong(raffleId)))
-                .flatMap(raffle -> meetupPort.getEventByMeetupId(raffle.meetupId()))
+                .flatMap(raffle -> meetupService2.getEventByMeetupId(raffle.meetupId()))
                 .ifPresent(this::updateContent);
     }
 }

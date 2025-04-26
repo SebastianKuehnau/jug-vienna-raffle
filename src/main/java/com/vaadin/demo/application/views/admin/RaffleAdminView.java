@@ -2,7 +2,7 @@ package com.vaadin.demo.application.views.admin;
 
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
-import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
 import com.vaadin.demo.application.application.service.RaffleService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.demo.application.views.admin.components.IconButton;
@@ -42,12 +42,12 @@ public class RaffleAdminView extends VerticalLayout {
     private final MeetupService meetupService;
     private final Grid<Raffle> raffleGrid;
 
-    private final MeetupPort meetupPort;
+    private final MeetupApplicationService meetupApplicationService;
 
-    public RaffleAdminView(RaffleService raffleService, MeetupService meetupService, MeetupPort meetupPort) {
+    public RaffleAdminView(RaffleService raffleService, MeetupService meetupService, MeetupApplicationService meetupApplicationService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
-        this.meetupPort = meetupPort;
+        this.meetupApplicationService = meetupApplicationService;
         add(new H1("Admin View"));
 
         // Add "All Events" link
@@ -143,7 +143,7 @@ public class RaffleAdminView extends VerticalLayout {
     private void importMeetupButtonClicked(ClickEvent<Button> event) {
         MeetupImportDialog importDialog = new MeetupImportDialog(
                 meetupService, 
-                meetupPort, 
+                meetupApplicationService, 
                 this::refreshGrid
         );
         importDialog.open();

@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.views.admin.components;
 
-import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.flow.component.button.Button;
@@ -27,7 +27,7 @@ import java.util.Set;
 public class MeetupImportDialog extends Dialog {
 
     private final MeetupService meetupApiClient;
-    private final MeetupPort meetupService;
+    private final MeetupApplicationService meetupService;
     private final Runnable onImportComplete;
 
     private final Grid<MeetupService.MeetupEvent> meetupGrid = new Grid<>();
@@ -43,7 +43,7 @@ public class MeetupImportDialog extends Dialog {
      * @param onImportComplete Callback to run when import is complete
      */
     public MeetupImportDialog(MeetupService meetupApiClient, 
-                             MeetupPort meetupService,
+                             MeetupApplicationService meetupService,
                              Runnable onImportComplete) {
         this.meetupApiClient = meetupApiClient;
         this.meetupService = meetupService;

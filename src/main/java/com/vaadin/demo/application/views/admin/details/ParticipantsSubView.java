@@ -3,8 +3,8 @@ package com.vaadin.demo.application.views.admin.details;
 import com.vaadin.demo.application.domain.model.MemberRecord;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -24,8 +24,8 @@ import java.util.Optional;
 public class ParticipantsSubView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Grid<ParticipantViewModel> grid;
-    private final RafflePort raffleService;
-    private final MeetupPort meetupService;
+    private final RaffleApplicationService raffleService;
+    private final MeetupApplicationService meetupService;
     private String currentMeetupEventId;
     private Long currentRaffleId;
 
@@ -56,7 +56,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
         public ParticipantRecord.AttendanceStatus getAttendanceStatus() { return attendanceStatus; }
     }
 
-    public ParticipantsSubView(RafflePort raffleService, MeetupPort meetupService) {
+    public ParticipantsSubView(RaffleApplicationService raffleService, MeetupApplicationService meetupService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
         
