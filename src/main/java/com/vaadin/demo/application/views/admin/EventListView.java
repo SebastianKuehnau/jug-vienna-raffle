@@ -1,0 +1,176 @@
+package com.vaadin.demo.application.views.admin;
+
+import com.vaadin.demo.application.data.MeetupEvent;
+import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.views.MainLayout;
+import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
+import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import org.vaadin.lineawesome.LineAwesomeIconUrl;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Admin view that shows all Meetup events and their raffle status
+ */
+@AnonymousAllowed
+@PageTitle("All Events")
+@Route(value = "events", layout = MainLayout.class)
+@Menu(order = 4, icon = LineAwesomeIconUrl.CALENDAR_ALT_SOLID, title = "All Events")
+@SuppressWarnings("serial")
+public class EventListView extends VerticalLayout {
+
+    private final MeetupPort meetupService;
+    private final RafflePort raffleService;
+    private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
+
+    private final Grid<MeetupEvent> eventGrid = new Grid<>();
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public EventListView(MeetupPort meetupService,
+                        RafflePort raffleService,
+                        com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient) {
+        this.meetupService = meetupService;
+        this.raffleService = raffleService;
+        this.meetupApiClient = meetupApiClient;
+
+        setSizeFull();
+        setPadding(true);
+
+        add(new H1("All Events"));
+
+        configureGrid();
+
+        // Create button layout
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+
+        // Import Meetup events button
+        Button importMeetupButton = new Button("Import Meetup Events", new Icon(VaadinIcon.DOWNLOAD));
+        importMeetupButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        importMeetupButton.addClickListener(this::importMeetupButtonClicked);
+
+        // Refresh button
+        Button refreshButton = new Button("Refresh", new Icon(VaadinIcon.REFRESH));
+        refreshButton.addClickListener(e -> refreshEvents());
+
+        buttonLayout.add(importMeetupButton, refreshButton);
+        add(buttonLayout);
+
+        // Load initial data
+        refreshEvents();
+    }
+
+    private void configureGrid() {
+        eventGrid.addColumn(MeetupEvent::getMeetupId).setHeader("Meetup ID").setWidth("120px").setFlexGrow(0);
+        eventGrid.addColumn(MeetupEvent::getTitle).setHeader("Title").setAutoWidth(true).setFlexGrow(1);
+
+        // Date/time column
+        eventGrid.addColumn(event -> {
+            if (event.getDateTime() != null) {
+                return event.getDateTime().format(DATE_FORMATTER);
+            } else {
+                return "N/A";
+            }
+        }).setHeader("Date/Time").setWidth("150px").setFlexGrow(0);
+
+        // Status column
+        eventGrid.addColumn(MeetupEvent::getStatus).setHeader("Status").setWidth("100px").setFlexGrow(0);
+
+        // Action column with buttons
+        eventGrid.addComponentColumn(event -> {
+            HorizontalLayout buttonLayout = new HorizontalLayout();
+
+            // Sync Members button - This SyncMembersButton will need to be updated for the new architecture
+            SyncMembersButton syncButton = new SyncMembersButton(meetupService, event.getMeetupId());
+            buttonLayout.add(syncButton);
+
+            // Raffle button
+            Optional<Raffle> raffle = raffleService.getRaffleByMeetupEventId(event.getMeetupId());
+            if (raffle.isPresent()) {
+                Button viewButton = new Button("View Raffle", e -> {
+                    getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.get().getId() + "/details"));
+                });
+                viewButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+                buttonLayout.add(viewButton);
+            } else {
+                Button createButton = new Button("Create Raffle", e -> createRaffle(event));
+                createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+                buttonLayout.add(createButton);
+            }
+
+            return buttonLayout;
+        }).setHeader("Actions").setWidth("380px").setFlexGrow(0);
+
+        eventGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        eventGrid.setHeightFull();
+
+        add(eventGrid);
+    }
+
+    private void refreshEvents() {
+        List<MeetupEvent> events = meetupService.getAllEvents();
+        eventGrid.setItems(events);
+    }
+
+    private void importMeetupButtonClicked(ClickEvent<Button> event) {
+        MeetupImportDialog importDialog = new MeetupImportDialog(
+                meetupApiClient,
+                meetupService,
+                this::refreshEvents
+        );
+        importDialog.open();
+    }
+
+    private void createRaffle(MeetupEvent event) {
+        try {
+            // Check if raffle already exists
+            if (raffleService.getRaffleByMeetupEventId(event.getMeetupId()).isPresent()) {
+                Notification.show("Raffle already exists for this event",
+                        3000, Notification.Position.MIDDLE)
+                        .addThemeVariants(NotificationVariant.LUMO_WARNING);
+                return;
+            }
+
+            // Create new raffle using the service
+            Raffle raffle = raffleService.createRaffle(event);
+
+            // Show success notification
+            Notification.show("Raffle created for " + event.getTitle(),
+                    3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+            // Refresh grid to update status
+            refreshEvents();
+
+            // Navigate to raffle details
+            getUI().ifPresent(ui -> ui.navigate("raffle-admin/" + raffle.getId() + "/details"));
+
+        } catch (Exception e) {
+            Notification.show("Error creating raffle: " + e.getMessage(),
+                    5000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+}

@@ -8,43 +8,31 @@ import lombok.ToString;
 import java.time.OffsetDateTime;
 
 /**
- * Entity representing a participant in a specific Meetup event
- * This is the join table between Member and MeetupEvent
+ * Entity to store Meetup member information for a specific event
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@ToString(onlyExplicitlyIncluded = true)
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"meetup_event_id", "member_id"}))
-public class Participant extends AbstractEntity {
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"meetup_event_id", "meetup_id"}))
+public class MeetupMember extends AbstractEntity {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "meetup_event_id")
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     private MeetupEvent meetupEvent;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "member_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Member member;
-
-    @ToString.Include
+    private String meetupId;
+    private String name;
+    private String email;
     private String rsvpId;
-    
-    @ToString.Include
-    private Boolean isOrganizer = false;
-    
-    @ToString.Include
-    private Boolean hasEnteredRaffle = false;
+    private Boolean isOrganizer;
+    private Boolean hasEnteredRaffle;
 
     /**
      * RSVP status for this event (YES or NO)
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "rsvp_status")
-    @ToString.Include
     private RSVPStatus rsvpStatus = RSVPStatus.YES;
 
     /**
@@ -52,19 +40,27 @@ public class Participant extends AbstractEntity {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "attendance_status")
-    @ToString.Include
     private AttendanceStatus attendanceStatus = AttendanceStatus.UNKNOWN;
 
     @Column(name = "last_updated")
-    @ToString.Exclude
-    private OffsetDateTime lastUpdated = OffsetDateTime.now();
-
-    @OneToOne(mappedBy = "winner", fetch = FetchType.EAGER)
-    @ToString.Exclude
-    private Prize wonPrize;
+    private OffsetDateTime lastUpdated;
 
     /**
-     * Mark this participant as having attended the event
+     * Updates the member data from a Meetup API response
+     */
+    public void updateFromApiResponse(com.vaadin.demo.application.services.meetup.MeetupService.Member apiMember) {
+        this.meetupId = apiMember.id();
+        this.name = apiMember.name();
+        this.email = apiMember.email();
+        this.rsvpId = apiMember.rsvp_id();
+        this.isOrganizer = apiMember.isOrganizer();
+        this.hasEnteredRaffle = apiMember.hasEnteredRaffle();
+        // Don't update RSVP status or attendance info as they might have been manually set
+        this.lastUpdated = OffsetDateTime.now();
+    }
+
+    /**
+     * Mark this member as having attended the event
      */
     public void markAsAttended() {
         this.attendanceStatus = AttendanceStatus.ATTENDED;
@@ -72,7 +68,7 @@ public class Participant extends AbstractEntity {
     }
 
     /**
-     * Mark this participant as a no-show
+     * Mark this member as a no-show
      */
     public void markAsNoShow() {
         this.attendanceStatus = AttendanceStatus.NO_SHOW;
@@ -92,7 +88,7 @@ public class Participant extends AbstractEntity {
      */
     public enum RSVPStatus {
         YES,    // Confirmed attendance
-        NO      // Declined attendance
+        NO,      // Declined attendance
     }
 
     /**

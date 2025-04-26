@@ -2,8 +2,8 @@ package com.vaadin.demo.application.views.admin.details;
 
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.services.PrizeService;
-import com.vaadin.demo.application.services.RaffleService;
 import com.vaadin.demo.application.views.admin.SpinWheelView;
 import com.vaadin.demo.application.views.admin.components.IconButton;
 import com.vaadin.demo.application.views.admin.components.PrizeDialog;
@@ -29,9 +29,9 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
     private final PrizeService prizeService;
 
     private Raffle raffle;
-    private final RaffleService raffleService;
+    private final RafflePort raffleService;
 
-    public PrizesCrudSubView(PrizeService prizeService, RaffleService raffleService) {
+    public PrizesCrudSubView(PrizeService prizeService, RafflePort raffleService) {
         this.prizeService = prizeService;
         this.raffleService = raffleService;
 
@@ -87,7 +87,7 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
     public void beforeEnter(BeforeEnterEvent event) {
         RouteParameters parameters = event.getRouteParameters();
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
-                .flatMap(raffleId -> raffleService.get(Long.parseLong(raffleId)))
+                .flatMap(raffleId -> raffleService.getRaffleById(Long.parseLong(raffleId)))
                 .ifPresent(this::setRaffle);
     }
 }

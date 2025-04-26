@@ -3,9 +3,8 @@ package com.vaadin.demo.application.views.admin.details;
 import com.vaadin.demo.application.data.Member;
 import com.vaadin.demo.application.data.MeetupEvent;
 import com.vaadin.demo.application.data.Participant;
-import com.vaadin.demo.application.services.MeetupDataService;
-import com.vaadin.demo.application.services.RaffleService;
-import com.vaadin.demo.application.services.meetup.MeetupService;
+import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -18,17 +17,15 @@ import com.vaadin.flow.router.RouteParameters;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Route(value = "participants", layout = DetailsMainLayout.class)
 @com.vaadin.flow.server.auth.AnonymousAllowed
 public class ParticipantsSubView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Grid<ParticipantViewModel> grid;
-    private final RaffleService raffleService;
-    private final MeetupService meetupService;
-    private final MeetupDataService meetupDataService;
+    private final RafflePort raffleService;
+    private final MeetupPort meetupService;
     private String currentMeetupEventId;
     private Long currentRaffleId;
 
@@ -59,15 +56,14 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
         public Participant.AttendanceStatus getAttendanceStatus() { return attendanceStatus; }
     }
 
-    public ParticipantsSubView(RaffleService raffleService, MeetupService meetupService, MeetupDataService meetupDataService) {
+    public ParticipantsSubView(RafflePort raffleService, MeetupPort meetupService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
-        this.meetupDataService = meetupDataService;
         
         // Create header layout with buttons
         HorizontalLayout buttonLayout = new HorizontalLayout();
         
-        SyncMembersButton syncButton = new SyncMembersButton(meetupDataService, "");
+        SyncMembersButton syncButton = new SyncMembersButton(meetupService, "");
         syncButton.setVisible(false); // Hide until we have a meetup ID
         
         Button refreshButton = new Button("Refresh");
@@ -92,9 +88,9 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
 
     private void refreshParticipants() {
         if (currentMeetupEventId != null) {
-            meetupDataService.getMeetupEventByMeetupId(currentMeetupEventId)
+            meetupService.getEventByMeetupId(currentMeetupEventId)
                 .ifPresent(event -> {
-                    List<Participant> participants = meetupDataService.getParticipantsForEvent(event);
+                    List<Participant> participants = meetupService.getParticipantsForEvent(event);
                     updateContent(participants);
                     
                     // Update the button
@@ -114,7 +110,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
     public void updateContent(List<Participant> participants) {
         List<ParticipantViewModel> viewModels = participants.stream()
             .map(ParticipantViewModel::new)
-            .collect(Collectors.toList());
+            .toList();
         grid.setItems(viewModels);
     }
 
@@ -124,7 +120,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
                 .flatMap(raffleId -> {
                     this.currentRaffleId = Long.parseLong(raffleId);
-                    return raffleService.get(this.currentRaffleId);
+                    return raffleService.getRaffleById(this.currentRaffleId);
                 })
                 .ifPresent(raffle -> {
                     // Store Meetup ID for sync button
@@ -142,7 +138,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
                                 .ifPresent(c -> {
                                     buttonLayout.remove(c);
                                     SyncMembersButton newSyncButton = new SyncMembersButton(
-                                            meetupDataService, 
+                                            meetupService, 
                                             currentMeetupEventId
                                     );
                                     buttonLayout.addComponentAtIndex(0, newSyncButton);
