@@ -1,9 +1,9 @@
 package com.vaadin.demo.application.domain.port;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Participant;
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.model.EventRecord;
+import com.vaadin.demo.application.domain.model.ParticipantRecord;
+import com.vaadin.demo.application.domain.model.PrizeRecord;
+import com.vaadin.demo.application.domain.model.RaffleRecord;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,47 +17,47 @@ public interface RafflePort {
     /**
      * Get a raffle by ID
      */
-    Optional<Raffle> getRaffleById(Long id);
+    Optional<RaffleRecord> getRaffleById(Long id);
     
     /**
      * Get a prize by ID
      */
-    Optional<Prize> getPrizeById(Long id);
+    Optional<PrizeRecord> getPrizeById(Long id);
     
     /**
      * Get a raffle by Meetup event ID
      */
-    Optional<Raffle> getRaffleByMeetupEventId(String meetupEventId);
+    Optional<RaffleRecord> getRaffleByMeetupEventId(String meetupEventId);
     
     /**
      * Get prizes for a raffle
      */
-    List<Prize> getPrizesForRaffle(Raffle raffle);
+    List<PrizeRecord> getPrizesForRaffle(RaffleRecord raffle);
     
     /**
      * Get eligible participants for a raffle
      */
-    List<Participant> getEligibleParticipants(Raffle raffle);
+    List<ParticipantRecord> getEligibleParticipants(RaffleRecord raffle);
     
     /**
      * Create a new raffle for an event
      */
-    Raffle createRaffle(MeetupEvent event);
+    RaffleRecord createRaffle(EventRecord event);
     
     /**
      * Save a raffle
      */
-    Raffle saveRaffle(Raffle raffle);
+    RaffleRecord saveRaffle(RaffleRecord raffle);
     
     /**
      * Save a prize
      */
-    Prize savePrize(Prize prize);
+    PrizeRecord savePrize(PrizeRecord prize);
     
     /**
      * Award a prize to a participant
      */
-    Prize awardPrize(Prize prize, Participant participant);
+    PrizeRecord awardPrize(PrizeRecord prize, ParticipantRecord participant);
     
     /**
      * Delete a prize

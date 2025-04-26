@@ -1,8 +1,8 @@
 package com.vaadin.demo.application.domain.port;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Member;
-import com.vaadin.demo.application.data.Participant;
+import com.vaadin.demo.application.domain.model.EventRecord;
+import com.vaadin.demo.application.domain.model.MemberRecord;
+import com.vaadin.demo.application.domain.model.ParticipantRecord;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,28 +17,28 @@ public interface MeetupPort {
     /**
      * Get an event by its Meetup ID
      */
-    Optional<MeetupEvent> getEventByMeetupId(String meetupId);
+    Optional<EventRecord> getEventByMeetupId(String meetupId);
     
     /**
      * Get all events
      */
-    List<MeetupEvent> getAllEvents();
+    List<EventRecord> getAllEvents();
     
     /**
      * Get all participants for an event
      */
-    List<Participant> getParticipantsForEvent(MeetupEvent event);
+    List<ParticipantRecord> getParticipantsForEvent(EventRecord event);
     
     /**
      * Get raffle-eligible participants for an event
      */
-    List<Participant> getRaffleEligibleParticipants(MeetupEvent event);
+    List<ParticipantRecord> getRaffleEligibleParticipants(EventRecord event);
     
     /**
      * Import a Meetup event by ID
      * This will fetch event data from external service and store it locally
      */
-    MeetupEvent importEvent(String meetupId);
+    EventRecord importEvent(String meetupId);
     
     /**
      * Sync members for an event from external service to local database
@@ -53,20 +53,20 @@ public interface MeetupPort {
     /**
      * Mark a participant as having entered the raffle
      */
-    Participant markParticipantEnteredRaffle(Long participantId);
+    ParticipantRecord markParticipantEnteredRaffle(Long participantId);
     
     /**
      * Mark a participant as attended and having entered the raffle
      */
-    Participant markParticipantAttendedAndEnteredRaffle(Long participantId);
+    ParticipantRecord markParticipantAttendedAndEnteredRaffle(Long participantId);
     
     /**
      * Mark a participant as no-show and having entered the raffle
      */
-    Participant markParticipantNoShowAndEnteredRaffle(Long participantId);
+    ParticipantRecord markParticipantNoShowAndEnteredRaffle(Long participantId);
     
     /**
      * Reset raffle entry status for all participants of an event
      */
-    void resetRaffleEntryForEvent(MeetupEvent event);
+    void resetRaffleEntryForEvent(EventRecord event);
 }
