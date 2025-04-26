@@ -8,15 +8,19 @@ import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.repository.MeetupEventRepository;
+import com.vaadin.demo.application.repository.ParticipantRepository;
 import com.vaadin.demo.application.repository.PrizeRepository;
 import com.vaadin.demo.application.repository.RaffleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the RafflePort interface
@@ -24,7 +28,7 @@ import java.util.Optional;
  */
 // Keeping this for backward compatibility
 // The new service implementation is in the adapter package
-@Service(value = "legacyRaffleService")
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class RaffleService {
@@ -33,6 +37,7 @@ public class RaffleService {
     private final PrizeRepository prizeRepository;
     private final com.vaadin.demo.application.adapter.MeetupServiceAdapter meetupService;
     private final MeetupEventRepository meetupEventRepository;
+    private final ParticipantRepository participantRepository;
 
     @Transactional(readOnly = true)
     public Optional<Raffle> getRaffleById(Long id) {
@@ -63,7 +68,23 @@ public class RaffleService {
     public List<Participant> getEligibleParticipants(Raffle raffle) {
         MeetupEvent event = raffle.getEvent();
         if (event != null) {
-            return meetupService.getRaffleEligibleParticipants(event);
+            // Convert MeetupEvent to EventRecord first
+            EventRecord eventRecord = new EventRecord(
+                event.getId(),
+                event.getMeetupId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDateTime(),
+                null, // No venue in MeetupEvent
+                event.getEventUrl()
+            );
+            return meetupService.getRaffleEligibleParticipants(eventRecord).stream()
+                .map(record -> {
+                    // Find the actual Participant entity in the database
+                    return participantRepository.findById(record.id())
+                        .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + record.id()));
+                })
+                .collect(Collectors.toList());
         }
         return List.of();
     }
@@ -106,5 +127,34 @@ public class RaffleService {
     @Transactional
     public void deletePrize(Long prizeId) {
         prizeRepository.deleteById(prizeId);
+    }
+    
+    // Methods to make it compatible with the views
+    public List<Raffle> list(Pageable pageable) {
+        return raffleRepository.findAll(pageable).stream().toList();
+    }
+
+    public List<Raffle> list(Pageable pageable, Specification<Raffle> filter) {
+        return raffleRepository.findAll(filter, pageable).stream().toList();
+    }
+    
+    public long count() {
+        return raffleRepository.count();
+    }
+
+    public long count(Specification<Raffle> filter) {
+        return raffleRepository.count(filter);
+    }
+    
+    public Optional<Raffle> get(Long id) {
+        return raffleRepository.findById(id);
+    }
+    
+    public Raffle save(Raffle entity) {
+        return raffleRepository.save(entity);
+    }
+    
+    public void delete(Long id) {
+        raffleRepository.deleteById(id);
     }
 }

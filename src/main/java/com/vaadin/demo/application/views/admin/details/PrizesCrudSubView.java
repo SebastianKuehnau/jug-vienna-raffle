@@ -1,5 +1,6 @@
 package com.vaadin.demo.application.views.admin.details;
 
+import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.domain.port.RafflePort;
@@ -57,15 +58,24 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
         // We need to adapt domain records to JPA entities for the PrizeDialog
         // This should be refactored in future to use domain records directly
         var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
-        prizeDialog.setPrize(event.getValue());
+        // Convert domain PrizeRecord to JPA entity
+        Prize entityPrize = new Prize();
+        PrizeRecord record = event.getValue();
+        if (record != null) {
+            entityPrize.setId(record.id());
+            entityPrize.setName(record.name());
+        }
+        prizeDialog.setPrize(entityPrize);
         prizeDialog.open();
     }
 
     private void addPrize(ClickEvent<Button> buttonClickEvent) {
         // For future: enhance PrizeDialog to work with domain records
         var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
-        // Create an empty PrizeRecord
-        prizeDialog.setPrize(null); // This needs further adaptation
+        // Create an empty Prize entity for the dialog
+        Prize emptyPrize = new Prize();
+        emptyPrize.setName("");
+        prizeDialog.setPrize(emptyPrize);
         prizeDialog.open();
     }
 
@@ -84,11 +94,11 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
             null, // No winner mapping yet
             this.raffle
         );
-        
+
         raffleService.savePrize(prizeRecord);
         refreshPrizes();
     }
-    
+
     private void refreshPrizes() {
         if (raffle != null) {
             prizeGrid.setItems(raffleService.getPrizesForRaffle(raffle));

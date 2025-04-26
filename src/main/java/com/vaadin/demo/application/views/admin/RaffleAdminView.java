@@ -3,7 +3,7 @@ package com.vaadin.demo.application.views.admin;
 import com.vaadin.demo.application.data.Prize;
 import com.vaadin.demo.application.data.Raffle;
 import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.services.RaffleService;
+import com.vaadin.demo.application.application.service.RaffleService;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.demo.application.views.admin.components.IconButton;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;

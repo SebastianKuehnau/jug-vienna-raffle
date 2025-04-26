@@ -96,7 +96,7 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
         RouteParameters parameters = event.getRouteParameters();
         parameters.get(DetailsMainLayout.RAFFLE_ID_PARAMETER)
                 .flatMap(raffleId -> raffleService.getRaffleById(Long.parseLong(raffleId)))
-                .flatMap(raffle -> meetupService.getEventByMeetupId(raffle.meetupId()))
+                .flatMap(raffle -> meetupPort.getEventByMeetupId(raffle.meetupId()))
                 .ifPresent(this::updateContent);
     }
 }

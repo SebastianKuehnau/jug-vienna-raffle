@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-// import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 // Old service - now replaced by hexagonal architecture implementation
-// Remove @Service annotation to avoid bean name conflict
+@Service(value = "oldRaffleService")
 public class RaffleService {
 
     private final RaffleRepository repository;
