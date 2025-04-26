@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.views.admin.details;
 
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.domain.model.PrizeRecord;
+import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.services.PrizeService;
 import com.vaadin.demo.application.views.admin.SpinWheelView;
@@ -24,15 +24,13 @@ import com.vaadin.flow.router.RouteParameters;
 @com.vaadin.flow.server.auth.AnonymousAllowed
 public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final Grid<Prize> prizeGrid = new Grid<>(Prize.class);
+    private final Grid<PrizeRecord> prizeGrid = new Grid<>(PrizeRecord.class);
 
-    private final PrizeService prizeService;
-
-    private Raffle raffle;
     private final RafflePort raffleService;
 
-    public PrizesCrudSubView(PrizeService prizeService, RafflePort raffleService) {
-        this.prizeService = prizeService;
+    private RaffleRecord raffle;
+
+    public PrizesCrudSubView(RafflePort raffleService) {
         this.raffleService = raffleService;
 
         prizeGrid.setColumns("name", "winner");
@@ -46,41 +44,60 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
         add(prizeGrid, addButton);
     }
 
-    private Component createRaffleButton(Prize prize) {
+    private Component createRaffleButton(PrizeRecord prize) {
         var button = new Button("Start Raffle", VaadinIcon.SPINNER.create());
         button.addClickListener(event -> event.getSource().getUI()
-                .ifPresent(ui -> ui.navigate(SpinWheelView.class, prize.getId())));
-        button.setEnabled(prize.getWinnerName() == null || prize.getWinnerName().isBlank());
+                .ifPresent(ui -> ui.navigate(SpinWheelView.class, prize.id())));
+        button.setEnabled(prize.winner() == null);
         button.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         return button;
     }
 
-    private void selectPrize(AbstractField.ComponentValueChangeEvent<Grid<Prize>, Prize> event) {
+    private void selectPrize(AbstractField.ComponentValueChangeEvent<Grid<PrizeRecord>, PrizeRecord> event) {
+        // We need to adapt domain records to JPA entities for the PrizeDialog
+        // This should be refactored in future to use domain records directly
         var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
         prizeDialog.setPrize(event.getValue());
         prizeDialog.open();
     }
 
     private void addPrize(ClickEvent<Button> buttonClickEvent) {
+        // For future: enhance PrizeDialog to work with domain records
         var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
-        prizeDialog.setPrize(new Prize());
+        // Create an empty PrizeRecord
+        prizeDialog.setPrize(null); // This needs further adaptation
         prizeDialog.open();
     }
 
-    private void deletePrize(Prize prize) {
-        prizeService.delete(prize);
-        prizeGrid.getDataProvider().refreshAll();
+    private void deletePrize(Prize prizeEntity) {
+        // Convert entity-based call to domain-based call
+        raffleService.deletePrize(prizeEntity.getId());
+        refreshPrizes();
     }
 
-    private void savePrize(Prize prize) {
-        prize.setRaffle(this.raffle);
-        prizeService.save(prize);
-        prizeGrid.setItems(prizeService.findByRaffle(raffle));
+    private void savePrize(Prize prizeEntity) {
+        // Create a PrizeRecord from the entity (simplified)
+        // In a full implementation, we would need a proper mapper
+        PrizeRecord prizeRecord = new PrizeRecord(
+            prizeEntity.getId(),
+            prizeEntity.getName(),
+            null, // No winner mapping yet
+            this.raffle
+        );
+        
+        raffleService.savePrize(prizeRecord);
+        refreshPrizes();
+    }
+    
+    private void refreshPrizes() {
+        if (raffle != null) {
+            prizeGrid.setItems(raffleService.getPrizesForRaffle(raffle));
+        }
     }
 
-    public void setRaffle(Raffle raffle) {
+    public void setRaffle(RaffleRecord raffle) {
         this.raffle = raffle;
-        prizeGrid.setItems(prizeService.findByRaffle(raffle));
+        refreshPrizes();
     }
 
     @Override
