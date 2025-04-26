@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.views.admin.components;
 
 import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.data.MeetupEvent;
+import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -195,7 +195,7 @@ public class MeetupImportDialog extends Dialog {
         }));
     }
     
-    private MeetupEvent importEvent(MeetupService.MeetupEvent event) {
+    private EventRecord importEvent(MeetupService.MeetupEvent event) {
         return meetupService.importEvent(event.id());
     }
 }
