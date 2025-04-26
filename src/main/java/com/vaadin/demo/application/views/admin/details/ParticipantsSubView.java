@@ -1,8 +1,8 @@
 package com.vaadin.demo.application.views.admin.details;
 
-import com.vaadin.demo.application.data.Member;
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Participant;
+import com.vaadin.demo.application.domain.model.MemberRecord;
+import com.vaadin.demo.application.domain.model.EventRecord;
+import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
@@ -33,27 +33,27 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
     public static class ParticipantViewModel {
         private final String name;
         private final String email;
-        private final boolean organizer;  // Note: field name matches method without "is" prefix
-        private final boolean enteredRaffle;  // Note: field name matches method without "has" prefix
-        private final Participant.RSVPStatus rsvpStatus;
-        private final Participant.AttendanceStatus attendanceStatus;
+        private final boolean organizer;
+        private final boolean enteredRaffle;
+        private final ParticipantRecord.RsvpStatus rsvpStatus;
+        private final ParticipantRecord.AttendanceStatus attendanceStatus;
 
-        public ParticipantViewModel(Participant participant) {
-            Member member = participant.getMember();
-            this.name = member != null ? member.getName() : "";
-            this.email = member != null ? member.getEmail() : "";
-            this.organizer = participant.getIsOrganizer() != null && participant.getIsOrganizer();
-            this.enteredRaffle = participant.getHasEnteredRaffle() != null && participant.getHasEnteredRaffle();
-            this.rsvpStatus = participant.getRsvpStatus();
-            this.attendanceStatus = participant.getAttendanceStatus();
+        public ParticipantViewModel(ParticipantRecord participant) {
+            MemberRecord member = participant.member();
+            this.name = member != null ? member.name() : "";
+            this.email = member != null ? member.email() : "";
+            this.organizer = participant.isOrganizer();
+            this.enteredRaffle = participant.hasEnteredRaffle();
+            this.rsvpStatus = participant.rsvpStatus();
+            this.attendanceStatus = participant.attendanceStatus();
         }
 
         public String getName() { return name; }
         public String getEmail() { return email; }
         public boolean isOrganizer() { return organizer; }
         public boolean hasEnteredRaffle() { return enteredRaffle; }
-        public Participant.RSVPStatus getRsvpStatus() { return rsvpStatus; }
-        public Participant.AttendanceStatus getAttendanceStatus() { return attendanceStatus; }
+        public ParticipantRecord.RsvpStatus getRsvpStatus() { return rsvpStatus; }
+        public ParticipantRecord.AttendanceStatus getAttendanceStatus() { return attendanceStatus; }
     }
 
     public ParticipantsSubView(RafflePort raffleService, MeetupPort meetupService) {
@@ -90,8 +90,8 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
         if (currentMeetupEventId != null) {
             meetupService.getEventByMeetupId(currentMeetupEventId)
                 .ifPresent(event -> {
-                    List<Participant> participants = meetupService.getParticipantsForEvent(event);
-                    updateContent(participants);
+                    List<ParticipantRecord> participants = meetupService.getParticipantsForEvent(event);
+                    updateParticipantGrid(participants);
                     
                     // Update the button
                     getChildren()
@@ -107,7 +107,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
         }
     }
 
-    public void updateContent(List<Participant> participants) {
+    public void updateParticipantGrid(List<ParticipantRecord> participants) {
         List<ParticipantViewModel> viewModels = participants.stream()
             .map(ParticipantViewModel::new)
             .toList();
@@ -124,7 +124,7 @@ public class ParticipantsSubView extends VerticalLayout implements BeforeEnterOb
                 })
                 .ifPresent(raffle -> {
                     // Store Meetup ID for sync button
-                    this.currentMeetupEventId = raffle.getMeetup_event_id();
+                    this.currentMeetupEventId = raffle.meetupId();
                     
                     // Update the sync button
                     getChildren()
