@@ -20,28 +20,27 @@ import java.util.Optional;
  * Implementation of the RafflePort interface
  * This service is responsible for all Raffle-related operations
  */
-@Service
+// Keeping this for backward compatibility
+// The new service implementation is in the adapter package
+@Service(value = "legacyRaffleService")
 @RequiredArgsConstructor
 @Slf4j
-public class RaffleService implements RafflePort {
+public class RaffleService {
 
     private final RaffleRepository raffleRepository;
     private final PrizeRepository prizeRepository;
-    private final MeetupPort meetupService;
+    private final com.vaadin.demo.application.adapter.MeetupServiceAdapter meetupService;
 
-    @Override
     @Transactional(readOnly = true)
     public Optional<Raffle> getRaffleById(Long id) {
         return raffleRepository.findById(id);
     }
     
-    @Override
     @Transactional(readOnly = true)
     public Optional<Prize> getPrizeById(Long id) {
         return prizeRepository.findById(id);
     }
 
-    @Override
     @Transactional(readOnly = true)
     public Optional<Raffle> getRaffleByMeetupEventId(String meetupEventId) {
         // Try both methods for compatibility
@@ -52,13 +51,11 @@ public class RaffleService implements RafflePort {
         return result;
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<Prize> getPrizesForRaffle(Raffle raffle) {
         return prizeRepository.findByRaffle(raffle);
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<Participant> getEligibleParticipants(Raffle raffle) {
         MeetupEvent event = raffle.getEvent();
@@ -68,7 +65,6 @@ public class RaffleService implements RafflePort {
         return List.of();
     }
 
-    @Override
     @Transactional
     public Raffle createRaffle(MeetupEvent event) {
         // Check if a raffle already exists for this event
@@ -82,19 +78,16 @@ public class RaffleService implements RafflePort {
         return saveRaffle(raffle);
     }
 
-    @Override
     @Transactional
     public Raffle saveRaffle(Raffle raffle) {
         return raffleRepository.save(raffle);
     }
 
-    @Override
     @Transactional
     public Prize savePrize(Prize prize) {
         return prizeRepository.save(prize);
     }
 
-    @Override
     @Transactional
     public Prize awardPrize(Prize prize, Participant participant) {
         prize.setWinner(participant);
@@ -103,7 +96,6 @@ public class RaffleService implements RafflePort {
         return savePrize(prize);
     }
 
-    @Override
     @Transactional
     public void deletePrize(Long prizeId) {
         prizeRepository.deleteById(prizeId);

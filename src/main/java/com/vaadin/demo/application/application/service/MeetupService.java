@@ -24,10 +24,12 @@ import java.util.Set;
  * Implementation of the MeetupPort interface
  * This service is responsible for all Meetup-related operations and synchronization
  */
-@Service
+// Keeping this for backward compatibility
+// The new service implementation is in the adapter package
+@Service(value = "legacyMeetupService")
 @RequiredArgsConstructor
 @Slf4j
-public class MeetupService implements MeetupPort {
+public class MeetupService {
 
     // External service client
     private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
@@ -37,32 +39,27 @@ public class MeetupService implements MeetupPort {
     private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
 
-    @Override
     @Transactional(readOnly = true)
     public Optional<MeetupEvent> getEventByMeetupId(String meetupId) {
         return meetupEventRepository.findByMeetupId(meetupId);
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<MeetupEvent> getAllEvents() {
         return meetupEventRepository.findAll();
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<Participant> getParticipantsForEvent(MeetupEvent event) {
         return participantRepository.findByMeetupEvent(event);
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<Participant> getRaffleEligibleParticipants(MeetupEvent event) {
         return participantRepository.findByMeetupEventAndRsvpStatusAndIsOrganizerAndAttendanceStatus(
                 event, RSVPStatus.YES, false, Participant.AttendanceStatus.ATTENDED);
     }
 
-    @Override
     @Transactional
     public MeetupEvent importEvent(String meetupEventId) {
         // Fetch event data from external API
@@ -93,7 +90,6 @@ public class MeetupService implements MeetupPort {
         return event;
     }
 
-    @Override
     @Transactional
     public int syncEventMembers(Long eventId) {
         MeetupEvent event = meetupEventRepository.findById(eventId)
@@ -102,7 +98,6 @@ public class MeetupService implements MeetupPort {
         return syncMembersForEvent(event);
     }
 
-    @Override
     @Transactional
     public int syncEventMembersByMeetupId(String meetupEventId) {
         MeetupEvent event = meetupEventRepository.findByMeetupId(meetupEventId)
@@ -111,7 +106,6 @@ public class MeetupService implements MeetupPort {
         return syncMembersForEvent(event);
     }
 
-    @Override
     @Transactional
     public Participant markParticipantEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
@@ -122,7 +116,6 @@ public class MeetupService implements MeetupPort {
         return participantRepository.save(participant);
     }
     
-    @Override
     @Transactional
     public Participant markParticipantAttendedAndEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
@@ -134,7 +127,6 @@ public class MeetupService implements MeetupPort {
         return participantRepository.save(participant);
     }
     
-    @Override
     @Transactional
     public Participant markParticipantNoShowAndEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
@@ -146,7 +138,6 @@ public class MeetupService implements MeetupPort {
         return participantRepository.save(participant);
     }
 
-    @Override
     @Transactional
     public void resetRaffleEntryForEvent(MeetupEvent event) {
         List<Participant> participants = participantRepository.findByMeetupEvent(event);
