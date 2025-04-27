@@ -1,5 +1,7 @@
 package com.vaadin.demo.application.domain.model;
 
+import com.vaadin.demo.application.data.Member;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -14,18 +16,43 @@ public record MemberFormRecord(
     OffsetDateTime lastUpdated
 ) {
     /**
-     * Create a new MemberFormRecord from a MemberRecord
+     * Create a new MemberFormRecord from a Member JPA entity
      */
-    public static MemberFormRecord fromMemberRecord(MemberRecord memberRecord) {
-        if (memberRecord == null) return null;
+    public static MemberFormRecord fromMember(Member member) {
+        if (member == null) return null;
         
         return new MemberFormRecord(
-            memberRecord.id(),
-            memberRecord.meetupId(),
-            memberRecord.name(),
-            memberRecord.email(),
-            null // lastUpdated is not in MemberRecord
+            member.getId(),
+            member.getMeetupId(),
+            member.getName(),
+            member.getEmail(),
+            member.getLastUpdated()
         );
+    }
+    
+    /**
+     * Convert to a Member JPA entity
+     * Note: This doesn't handle the participations collection
+     */
+    public Member toMember() {
+        Member member = new Member();
+        member.setId(this.id);
+        member.setMeetupId(this.meetupId);
+        member.setName(this.name);
+        member.setEmail(this.email);
+        member.setLastUpdated(this.lastUpdated != null ? this.lastUpdated : OffsetDateTime.now());
+        return member;
+    }
+    
+    /**
+     * Update an existing Member entity with values from this form
+     */
+    public Member updateMember(Member existingMember) {
+        existingMember.setMeetupId(this.meetupId);
+        existingMember.setName(this.name);
+        existingMember.setEmail(this.email);
+        existingMember.setLastUpdated(OffsetDateTime.now());
+        return existingMember;
     }
     
     /**
@@ -39,19 +66,14 @@ public record MemberFormRecord(
      * Create an empty form record
      */
     public static MemberFormRecord empty() {
-        return new MemberFormRecord(null, null, "", "", null);
+        return new MemberFormRecord(null, "", "", "", OffsetDateTime.now());
     }
     
     /**
-     * Convert to a MemberRecord
+     * Create a new form with updated meetupId
      */
-    public MemberRecord toMemberRecord() {
-        return new MemberRecord(
-            this.id,
-            this.meetupId,
-            this.name,
-            this.email
-        );
+    public MemberFormRecord withMeetupId(String meetupId) {
+        return new MemberFormRecord(this.id, meetupId, this.name, this.email, this.lastUpdated);
     }
     
     /**
@@ -66,19 +88,5 @@ public record MemberFormRecord(
      */
     public MemberFormRecord withEmail(String email) {
         return new MemberFormRecord(this.id, this.meetupId, this.name, email, this.lastUpdated);
-    }
-    
-    /**
-     * Create a new form with updated meetupId
-     */
-    public MemberFormRecord withMeetupId(String meetupId) {
-        return new MemberFormRecord(this.id, meetupId, this.name, this.email, this.lastUpdated);
-    }
-    
-    /**
-     * Create a new form with updated lastUpdated
-     */
-    public MemberFormRecord withLastUpdated(OffsetDateTime lastUpdated) {
-        return new MemberFormRecord(this.id, this.meetupId, this.name, this.email, lastUpdated);
     }
 }
