@@ -1,6 +1,7 @@
 package com.vaadin.demo.application.application.service;
 
 import com.vaadin.demo.application.domain.model.*;
+import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class RaffleApplicationService {
     
     private final RafflePort rafflePort;
+    private final MeetupPort meetupPort;
     
-    public RaffleApplicationService(RafflePort rafflePort) {
+    public RaffleApplicationService(RafflePort rafflePort, MeetupPort meetupPort) {
         this.rafflePort = rafflePort;
+        this.meetupPort = meetupPort;
     }
     
     /**
@@ -26,6 +29,13 @@ public class RaffleApplicationService {
      */
     public Optional<RaffleRecord> getRaffleById(Long id) {
         return rafflePort.getRaffleById(id);
+    }
+    
+    /**
+     * Get all raffles
+     */
+    public List<RaffleRecord> getAllRaffles() {
+        return rafflePort.getAllRaffles();
     }
     
     /**
@@ -152,6 +162,24 @@ public class RaffleApplicationService {
     }
     
     /**
+     * Save a dialog form 
+     * This converts the form data to a domain record and saves it
+     */
+    public PrizeDialogFormRecord savePrizeDialogForm(PrizeDialogFormRecord dialogForm, RaffleRecord raffle) {
+        if (dialogForm.isTemplate()) {
+            // Save as template
+            PrizeTemplateRecord templateRecord = dialogForm.toPrizeTemplateRecord();
+            PrizeTemplateRecord savedTemplate = rafflePort.savePrizeTemplateRecord(templateRecord);
+            return PrizeDialogFormRecord.fromPrizeTemplateRecord(savedTemplate);
+        } else {
+            // Save as prize
+            PrizeRecord prizeRecord = dialogForm.toPrizeRecord(raffle);
+            PrizeRecord savedPrize = rafflePort.savePrize(prizeRecord);
+            return PrizeDialogFormRecord.fromPrizeRecord(savedPrize);
+        }
+    }
+    
+    /**
      * Get all raffles as form records
      */
     public List<RaffleFormRecord> getAllRaffleForms() {
@@ -181,6 +209,47 @@ public class RaffleApplicationService {
                 .map(PrizeFormRecord::fromPrizeRecord);
     }
     
+    /**
+     * Get a prize dialog form by ID
+     */
+    public Optional<PrizeDialogFormRecord> getPrizeDialogFormById(Long id) {
+        return rafflePort.getPrizeById(id)
+                .map(PrizeDialogFormRecord::fromPrizeRecord);
+    }
+    
+    /**
+     * Get a prize template dialog form by ID
+     */
+    public Optional<PrizeDialogFormRecord> getPrizeTemplateDialogFormById(Long id) {
+        return rafflePort.getPrizeTemplateRecordById(id)
+                .map(PrizeDialogFormRecord::fromPrizeTemplateRecord);
+    }
+    
+    /**
+     * Create an empty prize dialog form
+     */
+    public PrizeDialogFormRecord createEmptyPrizeDialogForm(boolean isTemplate) {
+        return isTemplate ? 
+                PrizeDialogFormRecord.emptyTemplate() : 
+                PrizeDialogFormRecord.emptyPrize();
+    }
+    
+    /**
+     * Delete a prize dialog form
+     */
+    public void deletePrizeDialogForm(PrizeDialogFormRecord form) {
+        if (form.isTemplate()) {
+            // Delete template
+            if (form.id() != null) {
+                rafflePort.deletePrizeTemplate(form.id());
+            }
+        } else {
+            // Delete prize
+            if (form.id() != null) {
+                rafflePort.deletePrize(form.id());
+            }
+        }
+    }
     
     /**
      * Save a prize template
