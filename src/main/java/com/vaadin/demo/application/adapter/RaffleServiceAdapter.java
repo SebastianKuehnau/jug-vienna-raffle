@@ -57,6 +57,14 @@ public class RaffleServiceAdapter implements RafflePort {
         }
         return result.map(Mapper::toRaffleRecord);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<RaffleRecord> getAllRaffles() {
+        return raffleRepository.findAll().stream()
+            .map(Mapper::toRaffleRecord)
+            .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional(readOnly = true)

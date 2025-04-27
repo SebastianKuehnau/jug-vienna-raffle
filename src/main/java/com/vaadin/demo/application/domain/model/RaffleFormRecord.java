@@ -26,7 +26,7 @@ public record RaffleFormRecord(
         
         return new RaffleFormRecord(
             raffleRecord.id(),
-            raffleRecord.meetupEventId(),
+            raffleRecord.meetupId(),
             raffleRecord.event() != null ? raffleRecord.event().title() : null,
             prizeNames
         );

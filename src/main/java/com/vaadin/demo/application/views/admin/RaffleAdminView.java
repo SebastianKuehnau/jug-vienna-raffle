@@ -1,9 +1,9 @@
 package com.vaadin.demo.application.views.admin;
 
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
-import com.vaadin.demo.application.application.service.RaffleService;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
+import com.vaadin.demo.application.domain.model.RaffleFormRecord;
+import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.services.meetup.MeetupService;
 import com.vaadin.demo.application.views.admin.components.IconButton;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
@@ -27,45 +27,59 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import org.springframework.data.domain.Pageable;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import java.util.List;
 
-@Menu(order = 5, icon = LineAwesomeIconUrl.TOOLS_SOLID, title = "Raffle Admin View")
+/**
+ * Raffle Admin View using domain records instead of JPA entities
+ */
+@Menu(order = 5, icon = LineAwesomeIconUrl.TOOLS_SOLID, title = "Raffle Admin")
 @AnonymousAllowed
-@PageTitle( "Raffle Admin View")
+@PageTitle("Raffle Admin")
 @Route("raffle-admin")
 @SuppressWarnings("serial")
 public class RaffleAdminView extends VerticalLayout {
 
-    private final RaffleService raffleService;
+    private final RaffleApplicationService raffleService;
     private final MeetupService meetupService;
-    private final Grid<Raffle> raffleGrid;
-
+    private final Grid<RaffleRecord> raffleGrid;
     private final MeetupApplicationService meetupApplicationService;
 
-    public RaffleAdminView(RaffleService raffleService, MeetupService meetupService, MeetupApplicationService meetupApplicationService) {
+    public RaffleAdminView(
+            RaffleApplicationService raffleService,
+            MeetupService meetupService,
+            MeetupApplicationService meetupApplicationService) {
         this.raffleService = raffleService;
         this.meetupService = meetupService;
         this.meetupApplicationService = meetupApplicationService;
-        add(new H1("Admin View"));
+        
+        add(new H1("Raffle Administration"));
 
         // Add "All Events" link
         Button viewAllEventsButton = new Button("View All Events", VaadinIcon.LIST.create());
         viewAllEventsButton.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate("events")));
         add(viewAllEventsButton);
         
-        raffleGrid = new Grid<>();
-        raffleGrid.addColumn(Raffle::getMeetup_event_id).setHeader("Meetup Event ID");
+        // Create grid showing raffle domain records
+        raffleGrid = new Grid<>(RaffleRecord.class, false);
+        raffleGrid.addColumn(RaffleRecord::meetupId).setHeader("Meetup Event ID");
         raffleGrid.addColumn(raffle -> {
-            try {
-                return meetupService.getEvent(raffle.getMeetup_event_id()).get().title();
-            } catch (Exception e) {
-                return "Unknown Event";
+            if (raffle.event() != null) {
+                return raffle.event().title();
+            } else {
+                try {
+                    return meetupService.getEvent(raffle.meetupId()).get().title();
+                } catch (Exception e) {
+                    return "Unknown Event";
+                }
             }
         }).setHeader("Meetup Event Name");
         raffleGrid.addColumn(createPrizeList()).setHeader("Prizes");
-        raffleGrid.setItemsPageable(raffleService::list);
+        
+        // Get all raffles from the RaffleApplicationService
+        refreshGrid();
+        
         raffleGrid.asSingleSelect().addValueChangeListener(this::raffleItemSelected);
         add(raffleGrid);
 
@@ -85,50 +99,60 @@ public class RaffleAdminView extends VerticalLayout {
         add(buttonLayout);
     }
 
-    private LitRenderer<Raffle> createPrizeList() {
-        ValueProvider<Raffle, Object> raffleObjectValueProvider = raffle ->
-                raffle.getPrizes().stream()
-                        .map(Prize::getName)
-                        .toList();
+    private LitRenderer<RaffleRecord> createPrizeList() {
+        ValueProvider<RaffleRecord, Object> prizeNamesProvider = raffle ->
+                raffle.prizes() != null ? 
+                    raffle.prizes().stream()
+                        .map(prize -> prize.name())
+                        .toList() : 
+                    List.of();
 
-        return LitRenderer.<Raffle>of("""
+        return LitRenderer.<RaffleRecord>of("""
                         <ul style="padding: 0; margin: 0">
                             ${item.prizeNames.map((name) => html`<li>${name}</li>`)}
                         </ul>
                     """)
-                .withProperty("prizeNames", raffleObjectValueProvider);
+                .withProperty("prizeNames", prizeNamesProvider);
     }
 
-    private void raffleItemSelected(AbstractField.ComponentValueChangeEvent<Grid<Raffle>, Raffle> gridRaffleComponentValueChangeEvent) {
-        UI.getCurrent().navigate(String.format("raffle-admin/%s/details", gridRaffleComponentValueChangeEvent.getValue().getId()));
+    private void raffleItemSelected(AbstractField.ComponentValueChangeEvent<Grid<RaffleRecord>, RaffleRecord> event) {
+        RaffleRecord raffle = event.getValue();
+        if (raffle != null && raffle.id() != null) {
+            UI.getCurrent().navigate(String.format("raffle-admin/%s/details", raffle.id()));
+        }
     }
 
     private void addButtonClicked(ClickEvent<Button> buttonClickEvent) {
         var dialog = new Dialog();
         dialog.setHeaderTitle("Add Raffle Event");
 
-        var raffleMeetupIdList = raffleService.list(Pageable.unpaged()).stream().map(Raffle::getMeetup_event_id).toList();
+        // Get existing raffle meetup IDs
+        List<String> existingRaffleMeetupIds = raffleService.getAllRaffles().stream()
+                .map(RaffleRecord::meetupId)
+                .toList();
+        
+        // Create select for meetup event
         var meetupEventIdSelect = new Select<MeetupService.MeetupEvent>();
         meetupEventIdSelect.setLabel("Meetup Event ID");
         meetupEventIdSelect.setItems(meetupService.getEvents());
         meetupEventIdSelect.setItemLabelGenerator(MeetupService.MeetupEvent::id);
         meetupEventIdSelect.setTextRenderer(this::createTextRenderer);
-        meetupEventIdSelect.setItemEnabledProvider(meetupEvent -> !raffleMeetupIdList.contains(meetupEvent.id()));
-        meetupEventIdSelect.setOverlayWidth(300, Unit.PIXELS);
+        meetupEventIdSelect.setItemEnabledProvider(meetupEvent -> !existingRaffleMeetupIds.contains(meetupEvent.id()));
+        meetupEventIdSelect.setWidth(300, Unit.PIXELS);
 
         var addButton = new Button("Add Raffle", VaadinIcon.PLUS.create());
         addButton.setEnabled(false);
         meetupEventIdSelect.addValueChangeListener(event -> {
-            event.getSource().getUI().ifPresent(
-                    ui -> ui.access(() -> addButton.setEnabled(event.getValue() != null))
-            );
+            addButton.setEnabled(event.getValue() != null);
         });
 
         addButton.addClickListener(event -> {
-            var newRaffle = new Raffle();
-            newRaffle.setMeetup_event_id(meetupEventIdSelect.getValue().id());
-            raffleService.save(newRaffle);
-            raffleGrid.getDataProvider().refreshAll();
+            String meetupEventId = meetupEventIdSelect.getValue().id();
+            
+            // Create new raffle using RaffleApplicationService
+            raffleService.createRaffleFromForm(meetupEventId);
+            
+            refreshGrid();
             dialog.close();
         });
 
@@ -150,7 +174,8 @@ public class RaffleAdminView extends VerticalLayout {
     }
     
     private void refreshGrid() {
-        raffleGrid.getDataProvider().refreshAll();
+        List<RaffleRecord> raffles = raffleService.getAllRaffles();
+        raffleGrid.setItems(raffles);
     }
 
     private String createTextRenderer(MeetupService.MeetupEvent meetupEvent) {

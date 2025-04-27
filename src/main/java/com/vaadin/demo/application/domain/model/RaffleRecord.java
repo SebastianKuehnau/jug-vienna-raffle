@@ -17,4 +17,12 @@ public record RaffleRecord(
     public static RaffleRecord simple(Long id, EventRecord event, String meetupId) {
         return new RaffleRecord(id, event, meetupId, List.of());
     }
+    
+    /**
+     * Get the Meetup event ID
+     * This is for compatibility with the current implementation
+     */
+    public String meetupEventId() {
+        return this.meetupId;
+    }
 }

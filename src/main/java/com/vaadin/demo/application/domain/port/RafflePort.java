@@ -17,6 +17,11 @@ public interface RafflePort {
     Optional<RaffleRecord> getRaffleById(Long id);
     
     /**
+     * Get all raffles
+     */
+    List<RaffleRecord> getAllRaffles();
+    
+    /**
      * Get a prize by ID
      */
     Optional<PrizeRecord> getPrizeById(Long id);
