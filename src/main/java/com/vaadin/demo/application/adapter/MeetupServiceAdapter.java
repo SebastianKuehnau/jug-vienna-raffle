@@ -183,6 +183,93 @@ public class MeetupServiceAdapter implements MeetupPort {
         participantRepository.saveAll(participants);
     }
     
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<EventRecord> getEventById(Long id) {
+        return meetupEventRepository.findById(id)
+            .map(Mapper::toEventRecord);
+    }
+    
+    @Override
+    @Transactional
+    public EventRecord saveEvent(EventRecord event) {
+        // Convert from domain record to JPA entity
+        MeetupEvent entityToSave = event.id() != null ? 
+            meetupEventRepository.findById(event.id())
+                .orElse(new MeetupEvent()) : 
+            new MeetupEvent();
+        
+        // Update fields from domain record
+        entityToSave.setMeetupId(event.meetupId());
+        entityToSave.setTitle(event.title());
+        entityToSave.setDescription(event.description());
+        entityToSave.setDateTime(event.eventDate());
+        entityToSave.setEventUrl(event.link());
+        
+        // Save entity and convert back to domain record
+        MeetupEvent savedEntity = meetupEventRepository.save(entityToSave);
+        return Mapper.toEventRecord(savedEntity);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<ParticipantRecord> getParticipantById(Long id) {
+        return participantRepository.findById(id)
+            .map(Mapper::toParticipantRecord);
+    }
+    
+    @Override
+    @Transactional
+    public ParticipantRecord markParticipantNotEnteredRaffle(Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+            .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
+        
+        participant.setHasEnteredRaffle(false);
+        participant.setLastUpdated(OffsetDateTime.now());
+        
+        Participant savedParticipant = participantRepository.save(participant);
+        return Mapper.toParticipantRecord(savedParticipant);
+    }
+    
+    @Override
+    @Transactional
+    public ParticipantRecord markParticipantAttended(Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+            .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
+        
+        participant.setAttendanceStatus(Participant.AttendanceStatus.ATTENDED);
+        participant.setLastUpdated(OffsetDateTime.now());
+        
+        Participant savedParticipant = participantRepository.save(participant);
+        return Mapper.toParticipantRecord(savedParticipant);
+    }
+    
+    @Override
+    @Transactional
+    public ParticipantRecord markParticipantNoShow(Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+            .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
+        
+        participant.setAttendanceStatus(Participant.AttendanceStatus.NO_SHOW);
+        participant.setLastUpdated(OffsetDateTime.now());
+        
+        Participant savedParticipant = participantRepository.save(participant);
+        return Mapper.toParticipantRecord(savedParticipant);
+    }
+    
+    @Override
+    @Transactional
+    public ParticipantRecord resetParticipantAttendanceStatus(Long participantId) {
+        Participant participant = participantRepository.findById(participantId)
+            .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
+        
+        participant.setAttendanceStatus(Participant.AttendanceStatus.UNKNOWN);
+        participant.setLastUpdated(OffsetDateTime.now());
+        
+        Participant savedParticipant = participantRepository.save(participant);
+        return Mapper.toParticipantRecord(savedParticipant);
+    }
+    
     /**
      * Sync members for an event from the Meetup API
      * @param event The event to sync members for

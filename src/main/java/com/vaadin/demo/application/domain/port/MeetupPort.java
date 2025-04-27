@@ -69,4 +69,39 @@ public interface MeetupPort {
      * Reset raffle entry status for all participants of an event
      */
     void resetRaffleEntryForEvent(EventRecord event);
+    
+    /**
+     * Get an event by ID (needed for UI form handling)
+     */
+    Optional<EventRecord> getEventById(Long id);
+    
+    /**
+     * Save an event (needed for UI form handling)
+     */
+    EventRecord saveEvent(EventRecord event);
+    
+    /**
+     * Get a participant by ID (needed for UI form handling)
+     */
+    Optional<ParticipantRecord> getParticipantById(Long id);
+    
+    /**
+     * Mark a participant as not having entered the raffle
+     */
+    ParticipantRecord markParticipantNotEnteredRaffle(Long participantId);
+    
+    /**
+     * Mark a participant as attended (without affecting raffle status)
+     */
+    ParticipantRecord markParticipantAttended(Long participantId);
+    
+    /**
+     * Mark a participant as no-show (without affecting raffle status)
+     */
+    ParticipantRecord markParticipantNoShow(Long participantId);
+    
+    /**
+     * Reset a participant's attendance status to unknown
+     */
+    ParticipantRecord resetParticipantAttendanceStatus(Long participantId);
 }

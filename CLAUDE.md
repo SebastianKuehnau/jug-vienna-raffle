@@ -22,3 +22,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - TypeScript/React used for frontend components
 - Lombok annotations preferred for boilerplate reduction
 - Repository pattern for data access
+
+## Architecture Guidelines
+- Follow hexagonal architecture (ports and adapters pattern)
+- Domain models should be immutable Java records
+- UI layer must not directly use JPA entities
+- Use application services to coordinate between UI and domain
+- Adapters should translate between JPA entities and domain records
+- Only create UI-specific form records when requirements differ from domain models
+
+## Workflow Guidelines
+- Regularly create commits for significant changes
+- Each commit should represent a logical unit of work
+- Include descriptive commit messages
+- Run tests before committing to ensure code is working correctly

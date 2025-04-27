@@ -1,12 +1,12 @@
 package com.vaadin.demo.application.application.service;
 
-import com.vaadin.demo.application.domain.model.EventRecord;
-import com.vaadin.demo.application.domain.model.ParticipantRecord;
+import com.vaadin.demo.application.domain.model.*;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Application service that uses the MeetupPort
@@ -97,5 +97,77 @@ public class MeetupApplicationService {
      */
     public void resetRaffleEntryForEvent(EventRecord event) {
         meetupPort.resetRaffleEntryForEvent(event);
+    }
+    
+    // ===== Form Record methods for UI layer =====
+    
+    /**
+     * Get an event form record by ID
+     */
+    public Optional<EventFormRecord> getEventFormById(Long id) {
+        return meetupPort.getEventById(id)
+                .map(EventFormRecord::fromEventRecord);
+    }
+    
+    /**
+     * Get all events as form records
+     */
+    public List<EventFormRecord> getAllEventForms() {
+        return meetupPort.getAllEvents().stream()
+                .map(EventFormRecord::fromEventRecord)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Save an event form
+     */
+    public EventFormRecord saveEventForm(EventFormRecord eventForm) {
+        EventRecord eventRecord = eventForm.toEventRecord();
+        EventRecord savedEvent = meetupPort.saveEvent(eventRecord);
+        return EventFormRecord.fromEventRecord(savedEvent);
+    }
+    
+    /**
+     * Get participants for an event as form records
+     */
+    public List<ParticipantFormRecord> getParticipantFormsForEvent(Long eventId) {
+        return meetupPort.getEventById(eventId)
+                .map(event -> meetupPort.getParticipantsForEvent(event).stream()
+                        .map(ParticipantFormRecord::fromParticipantRecord)
+                        .collect(Collectors.toList()))
+                .orElse(List.of());
+    }
+    
+    /**
+     * Get a participant form record by ID
+     */
+    public Optional<ParticipantFormRecord> getParticipantFormById(Long id) {
+        return meetupPort.getParticipantById(id)
+                .map(ParticipantFormRecord::fromParticipantRecord);
+    }
+    
+    /**
+     * Update participant raffle status
+     */
+    public ParticipantFormRecord updateParticipantRaffleStatus(Long participantId, boolean hasEnteredRaffle) {
+        ParticipantRecord updatedParticipant = hasEnteredRaffle ? 
+                meetupPort.markParticipantEnteredRaffle(participantId) :
+                meetupPort.markParticipantNotEnteredRaffle(participantId);
+        return ParticipantFormRecord.fromParticipantRecord(updatedParticipant);
+    }
+    
+    /**
+     * Update participant attendance status
+     */
+    public ParticipantFormRecord updateParticipantAttendanceStatus(Long participantId, String attendanceStatus) {
+        ParticipantRecord updatedParticipant;
+        if ("ATTENDED".equals(attendanceStatus)) {
+            updatedParticipant = meetupPort.markParticipantAttended(participantId);
+        } else if ("NO_SHOW".equals(attendanceStatus)) {
+            updatedParticipant = meetupPort.markParticipantNoShow(participantId);
+        } else {
+            updatedParticipant = meetupPort.resetParticipantAttendanceStatus(participantId);
+        }
+        return ParticipantFormRecord.fromParticipantRecord(updatedParticipant);
     }
 }

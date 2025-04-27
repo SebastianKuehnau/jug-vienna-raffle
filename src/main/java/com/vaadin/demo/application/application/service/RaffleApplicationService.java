@@ -152,6 +152,28 @@ public class RaffleApplicationService {
     }
     
     /**
+     * Get all raffles as form records
+     */
+    public List<RaffleFormRecord> getAllRaffleForms() {
+        return getAllRaffles().stream()
+                .map(RaffleFormRecord::fromRaffleRecord)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Create a raffle from a form
+     */
+    public RaffleFormRecord createRaffleFromForm(String meetupEventId) {
+        Optional<EventRecord> event = meetupPort.getEventByMeetupId(meetupEventId);
+        if (event.isEmpty()) {
+            throw new IllegalArgumentException("Event not found with ID: " + meetupEventId);
+        }
+        
+        RaffleRecord newRaffle = createRaffle(event.get());
+        return RaffleFormRecord.fromRaffleRecord(newRaffle);
+    }
+    
+    /**
      * Get a prize form by ID
      */
     public Optional<PrizeFormRecord> getPrizeFormById(Long id) {
