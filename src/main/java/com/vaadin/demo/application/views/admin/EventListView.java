@@ -4,6 +4,7 @@ import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
+import com.vaadin.demo.application.services.meetup.MeetupClient;
 import com.vaadin.demo.application.views.MainLayout;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
@@ -41,7 +42,7 @@ public class EventListView extends VerticalLayout {
 
     private final MeetupApplicationService meetupService;
     private final RaffleApplicationService raffleService;
-    private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
+    private final MeetupClient meetupApiClient;
 
     private final Grid<EventRecord> eventGrid = new Grid<>();
 
@@ -49,7 +50,7 @@ public class EventListView extends VerticalLayout {
 
     public EventListView(MeetupApplicationService meetupService,
                         RaffleApplicationService raffleService,
-                        com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient) {
+                        MeetupClient meetupApiClient) {
         this.meetupService = meetupService;
         this.raffleService = raffleService;
         this.meetupApiClient = meetupApiClient;

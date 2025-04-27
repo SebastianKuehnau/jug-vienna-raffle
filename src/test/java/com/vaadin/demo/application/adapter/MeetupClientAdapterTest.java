@@ -10,7 +10,7 @@ import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.repository.MeetupEventRepository;
 import com.vaadin.demo.application.repository.MemberRepository;
 import com.vaadin.demo.application.repository.ParticipantRepository;
-import com.vaadin.demo.application.services.meetup.MeetupService;
+import com.vaadin.demo.application.services.meetup.MeetupClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,17 +20,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MeetupServiceAdapterTest {
+class MeetupClientAdapterTest {
 
     @Mock
-    private MeetupService meetupApiClient;
+    private MeetupClient meetupApiClient;
 
     @Mock
     private MeetupEventRepository meetupEventRepository;
@@ -50,12 +49,12 @@ class MeetupServiceAdapterTest {
     @BeforeEach
     void setUp() {
         meetupServiceAdapter = new MeetupServiceAdapter(
-                meetupApiClient, 
-                meetupEventRepository, 
-                memberRepository, 
+                meetupApiClient,
+                meetupEventRepository,
+                memberRepository,
                 participantRepository
         );
-        
+
         // Create test data
         testEvent = new MeetupEvent();
         testEvent.setId(1L);
@@ -65,13 +64,13 @@ class MeetupServiceAdapterTest {
         testEvent.setDateTime(OffsetDateTime.now());
         testEvent.setEventUrl("http://test.url");
         testEvent.setStatus("active");
-        
+
         testMember = new Member();
         testMember.setId(1L);
         testMember.setMeetupId("member123");
         testMember.setName("John Doe");
         testMember.setEmail("john@example.com");
-        
+
         testParticipant = new Participant();
         testParticipant.setId(1L);
         testParticipant.setMeetupEvent(testEvent);

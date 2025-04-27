@@ -3,6 +3,8 @@ package com.vaadin.demo.application.domain.model;
 import com.vaadin.demo.application.data.Participant;
 import org.junit.jupiter.api.Test;
 
+import java.time.OffsetDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ParticipantRecordTest {
@@ -11,7 +13,7 @@ class ParticipantRecordTest {
     void testParticipantRecordCreation() {
         // Given
         Long id = 1L;
-        MemberRecord member = new MemberRecord(1L, "member123", "John Doe", "john@example.com");
+        MemberRecord member = new MemberRecord(1L, "member123", "John Doe", "john@example.com", OffsetDateTime.now());
         EventRecord event = EventRecord.simple(1L, "event123", "Test Event");
         String rsvpId = "rsvp123";
         boolean isOrganizer = false;
@@ -123,7 +125,7 @@ class ParticipantRecordTest {
     private ParticipantRecord createSampleParticipant() {
         return new ParticipantRecord(
                 1L,
-                new MemberRecord(1L, "member123", "John Doe", "john@example.com"),
+                new MemberRecord(1L, "member123", "John Doe", "john@example.com", OffsetDateTime.now()),
                 EventRecord.simple(1L, "event123", "Test Event"),
                 "rsvp123",
                 false,

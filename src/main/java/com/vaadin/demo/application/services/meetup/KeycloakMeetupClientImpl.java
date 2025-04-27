@@ -18,13 +18,13 @@ import org.springframework.web.client.RestClient;
 import java.util.Optional;
 import java.util.Set;
 
-public class KeycloakMeetupServiceImpl implements MeetupService {
+public class KeycloakMeetupClientImpl implements MeetupClient {
 
   private final HttpSyncGraphQlClient httpSyncGraphQlClient;
   private RestClient restClient;
   private final OAuth2AuthorizedClientService authorizedClientService;
 
-  public KeycloakMeetupServiceImpl(
+  public KeycloakMeetupClientImpl(
       @Value("${keycloak.server-url}") String keycloakServerUrl,
       @Value("${keycloak.realm}") String keycloakRealm,
       OAuth2AuthorizedClientService authorizedClientService

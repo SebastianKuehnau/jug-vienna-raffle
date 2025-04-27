@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface MeetupService {
+public interface MeetupClient {
 
     Optional<MeetupEvent> getEvent(String meetupEventId);
 

@@ -1,5 +1,6 @@
 package com.vaadin.demo.application.data;
 
+import com.vaadin.demo.application.services.meetup.MeetupClient;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,14 +23,14 @@ public class MeetupEvent extends AbstractEntity {
 
     private String token;
     private String title;
-    
+
     @Column(length = 5000)
     private String description;
-    
+
     private OffsetDateTime dateTime;
     private String eventUrl;
     private String status;
-    
+
     @Column(name = "last_updated")
     private OffsetDateTime lastUpdated = OffsetDateTime.now();
 
@@ -48,7 +49,7 @@ public class MeetupEvent extends AbstractEntity {
     /**
      * Updates the event data from a Meetup API response
      */
-    public void updateFromApiResponse(com.vaadin.demo.application.services.meetup.MeetupService.MeetupEvent apiEvent) {
+    public void updateFromApiResponse(MeetupClient.MeetupEvent apiEvent) {
         this.meetupId = apiEvent.id();
         this.token = apiEvent.token();
         this.title = apiEvent.title();

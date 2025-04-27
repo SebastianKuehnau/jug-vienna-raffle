@@ -4,11 +4,11 @@ import com.vaadin.demo.application.data.MeetupEvent;
 import com.vaadin.demo.application.data.Member;
 import com.vaadin.demo.application.data.Participant;
 import com.vaadin.demo.application.data.Participant.RSVPStatus;
-import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.repository.MeetupEventRepository;
 import com.vaadin.demo.application.repository.MemberRepository;
 import com.vaadin.demo.application.repository.ParticipantRepository;
-import com.vaadin.demo.application.services.meetup.MeetupService.MeetupEventWithRSVPs;
+import com.vaadin.demo.application.services.meetup.MeetupClient;
+import com.vaadin.demo.application.services.meetup.MeetupClient.MeetupEventWithRSVPs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,8 +32,8 @@ import java.util.Set;
 public class MeetupService {
 
     // External service client
-    private final com.vaadin.demo.application.services.meetup.MeetupService meetupApiClient;
-    
+    private final MeetupClient meetupApiClient;
+
     // Repositories
     private final MeetupEventRepository meetupEventRepository;
     private final MemberRepository memberRepository;
@@ -63,15 +63,15 @@ public class MeetupService {
     @Transactional
     public MeetupEvent importEvent(String meetupEventId) {
         // Fetch event data from external API
-        Optional<com.vaadin.demo.application.services.meetup.MeetupService.MeetupEvent> apiEventOpt = 
+        Optional<MeetupClient.MeetupEvent> apiEventOpt =
                 meetupApiClient.getEvent(meetupEventId);
-        
+
         if (apiEventOpt.isEmpty()) {
             throw new IllegalArgumentException("Meetup event not found: " + meetupEventId);
         }
-        
-        com.vaadin.demo.application.services.meetup.MeetupService.MeetupEvent apiEvent = apiEventOpt.get();
-        
+
+        MeetupClient.MeetupEvent apiEvent = apiEventOpt.get();
+
         // Find or create the event in our database
         MeetupEvent event = meetupEventRepository.findByMeetupId(meetupEventId)
                 .orElseGet(() -> {
@@ -79,14 +79,14 @@ public class MeetupService {
                     newEvent.setMeetupId(meetupEventId);
                     return newEvent;
                 });
-        
+
         // Update the event with data from the API
         event.updateFromApiResponse(apiEvent);
         meetupEventRepository.save(event);
-        
+
         // Sync members for the event
         syncEventMembersByMeetupId(meetupEventId);
-        
+
         return event;
     }
 
@@ -94,7 +94,7 @@ public class MeetupService {
     public int syncEventMembers(Long eventId) {
         MeetupEvent event = meetupEventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found: " + eventId));
-        
+
         return syncMembersForEvent(event);
     }
 
@@ -102,7 +102,7 @@ public class MeetupService {
     public int syncEventMembersByMeetupId(String meetupEventId) {
         MeetupEvent event = meetupEventRepository.findByMeetupId(meetupEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found: " + meetupEventId));
-        
+
         return syncMembersForEvent(event);
     }
 
@@ -110,28 +110,28 @@ public class MeetupService {
     public Participant markParticipantEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
-        
+
         participant.setHasEnteredRaffle(true);
         participant.setLastUpdated(OffsetDateTime.now());
         return participantRepository.save(participant);
     }
-    
+
     @Transactional
     public Participant markParticipantAttendedAndEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
-        
+
         participant.setAttendanceStatus(Participant.AttendanceStatus.ATTENDED);
         participant.setHasEnteredRaffle(true);
         participant.setLastUpdated(OffsetDateTime.now());
         return participantRepository.save(participant);
     }
-    
+
     @Transactional
     public Participant markParticipantNoShowAndEnteredRaffle(Long participantId) {
         Participant participant = participantRepository.findById(participantId)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found: " + participantId));
-        
+
         participant.setAttendanceStatus(Participant.AttendanceStatus.NO_SHOW);
         participant.setHasEnteredRaffle(true);
         participant.setLastUpdated(OffsetDateTime.now());
@@ -147,7 +147,7 @@ public class MeetupService {
         }
         participantRepository.saveAll(participants);
     }
-    
+
     /**
      * Sync members for an event from the Meetup API
      * @param event The event to sync members for
@@ -156,16 +156,16 @@ public class MeetupService {
     private int syncMembersForEvent(MeetupEvent event) {
         // Get the event details with RSVPs from the Meetup.com API
         Optional<MeetupEventWithRSVPs> apiEventOpt = meetupApiClient.getEventWithRSVPs(event.getMeetupId());
-        
+
         if (apiEventOpt.isEmpty()) {
             throw new IllegalArgumentException("Meetup event not found in API: " + event.getMeetupId());
         }
-        
+
         MeetupEventWithRSVPs apiEvent = apiEventOpt.get();
-        
+
         return updateParticipantsFromRSVPs(event, apiEvent);
     }
-    
+
     /**
      * Helper method to update participants from API event with RSVPs data
      * @return Number of participants updated or created
@@ -174,23 +174,23 @@ public class MeetupService {
         if (apiEvent.rsvps() == null) {
             return 0;
         }
-        
+
         int count = 0;
-        
+
         // Get all existing participants for this event
         List<Participant> existingParticipants = participantRepository.findByMeetupEvent(event);
         Set<String> rsvpMemberIds = new HashSet<>();
-        
+
         // Process RSVPs from API
-        for (com.vaadin.demo.application.services.meetup.MeetupService.RSVP rsvp : apiEvent.rsvps()) {
+        for (MeetupClient.RSVP rsvp : apiEvent.rsvps()) {
             // Skip invalid data
             if (rsvp.id() == null) {
                 continue;
             }
-            
+
             // Track which members were found in the API response
             rsvpMemberIds.add(rsvp.id());
-            
+
             // Find or create Member
             Member member = memberRepository.findByMeetupId(rsvp.id())
                     .orElseGet(() -> {
@@ -201,13 +201,13 @@ public class MeetupService {
                         newMember.setLastUpdated(OffsetDateTime.now());
                         return memberRepository.save(newMember);
                     });
-            
+
             // Update member data
             member.setName(rsvp.name());
             member.setEmail(rsvp.email());
             member.setLastUpdated(OffsetDateTime.now());
             memberRepository.save(member);
-            
+
             // Find or create Participant
             Participant participant = participantRepository.findByMeetupEventAndMember(event, member)
                     .orElseGet(() -> {
@@ -216,31 +216,31 @@ public class MeetupService {
                         newParticipant.setMember(member);
                         return newParticipant;
                     });
-            
+
             // Update participant data
             participant.setRsvpId(rsvp.id());
-            
+
             // For now, we're assuming everyone in the RSVP list is a YES
             participant.setRsvpStatus(RSVPStatus.YES);
-            
+
             participant.setLastUpdated(OffsetDateTime.now());
-            
+
             participantRepository.save(participant);
             count++;
         }
-        
+
         // Mark participants as NO if they're in the database but not in the API response
         List<Participant> missingParticipants = existingParticipants.stream()
                 .filter(p -> p.getMember() != null && !rsvpMemberIds.contains(p.getMember().getMeetupId()))
                 .toList();
-        
+
         for (Participant missingParticipant : missingParticipants) {
             missingParticipant.setRsvpStatus(RSVPStatus.NO);
             missingParticipant.setLastUpdated(OffsetDateTime.now());
             participantRepository.save(missingParticipant);
             count++;
         }
-        
+
         return count;
     }
 }

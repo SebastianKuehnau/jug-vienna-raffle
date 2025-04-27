@@ -49,6 +49,8 @@ class MapperTest {
         member.setMeetupId("member123");
         member.setName("John Doe");
         member.setEmail("john@example.com");
+        OffsetDateTime now = OffsetDateTime.now();
+        member.setLastUpdated(now);
 
         // When
         MemberRecord memberRecord = Mapper.toMemberRecord(member);
@@ -58,6 +60,7 @@ class MapperTest {
         assertEquals(member.getMeetupId(), memberRecord.meetupId());
         assertEquals(member.getName(), memberRecord.name());
         assertEquals(member.getEmail(), memberRecord.email());
+        assertEquals(member.getLastUpdated(), memberRecord.lastUpdated());
     }
 
     @Test

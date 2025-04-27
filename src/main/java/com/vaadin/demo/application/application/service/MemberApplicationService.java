@@ -2,7 +2,8 @@ package com.vaadin.demo.application.application.service;
 
 import com.vaadin.demo.application.data.Member;
 import com.vaadin.demo.application.domain.model.MemberFormRecord;
-import com.vaadin.demo.application.services.MemberService;
+import com.vaadin.demo.application.domain.model.MemberRecord;
+import com.vaadin.demo.application.domain.port.MemberPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,78 +18,90 @@ import java.util.Optional;
 @Service
 public class MemberApplicationService {
     
-    private final MemberService memberService;
+    private final MemberPort memberPort;
     
-    public MemberApplicationService(MemberService memberService) {
-        this.memberService = memberService;
+    public MemberApplicationService(MemberPort memberPort) {
+        this.memberPort = memberPort;
     }
     
     /**
      * Get a member form by ID
      */
     public Optional<MemberFormRecord> getMemberFormById(Long id) {
-        return memberService.get(id)
-                .map(MemberFormRecord::fromMember);
+        return memberPort.getMemberById(id)
+                .map(this::memberRecordToFormRecord);
     }
     
     /**
      * Get a member form by Meetup ID
      */
     public Optional<MemberFormRecord> getMemberFormByMeetupId(String meetupId) {
-        return memberService.getByMeetupId(meetupId)
-                .map(MemberFormRecord::fromMember);
+        return memberPort.getMemberByMeetupId(meetupId)
+                .map(this::memberRecordToFormRecord);
     }
     
     /**
      * List all members as form records with pagination
      */
     public Page<MemberFormRecord> listMemberForms(Pageable pageable) {
-        return memberService.list(pageable)
-                .map(MemberFormRecord::fromMember);
+        return memberPort.getAllMembers(pageable)
+                .map(this::memberRecordToFormRecord);
     }
     
     /**
      * List filtered members as form records with pagination
      */
     public Page<MemberFormRecord> listMemberForms(Pageable pageable, Specification<Member> filter) {
-        return memberService.list(pageable, filter)
-                .map(MemberFormRecord::fromMember);
+        return memberPort.getMembers(pageable, filter)
+                .map(this::memberRecordToFormRecord);
     }
     
     /**
      * Save a member form
      */
     public MemberFormRecord saveMemberForm(MemberFormRecord memberForm) {
-        Member member;
-        
-        if (memberForm.id() != null) {
-            // Update existing member
-            Optional<Member> existingMember = memberService.get(memberForm.id());
-            if (existingMember.isPresent()) {
-                member = memberForm.updateMember(existingMember.get());
-            } else {
-                member = memberForm.toMember();
-            }
-        } else {
-            // Create new member
-            member = memberForm.toMember();
-        }
-        
-        Member savedMember = memberService.save(member);
-        return MemberFormRecord.fromMember(savedMember);
+        MemberRecord memberRecord = formRecordToMemberRecord(memberForm);
+        MemberRecord savedMember = memberPort.saveMember(memberRecord);
+        return memberRecordToFormRecord(savedMember);
     }
     
     /**
      * Delete a member by ID
      */
     public void deleteMember(Long id) {
-        memberService.delete(id);
+        memberPort.deleteMember(id);
     }
     
     /**
      * Count all members
      */
     public int countMembers() {
-        return memberService.count();
+        return memberPort.countMembers();
+    }
+    
+    /**
+     * Convert domain MemberRecord to UI MemberFormRecord
+     */
+    private MemberFormRecord memberRecordToFormRecord(MemberRecord record) {
+        return new MemberFormRecord(
+            record.id(),
+            record.meetupId(),
+            record.name(),
+            record.email(),
+            record.lastUpdated()
+        );
+    }
+    
+    /**
+     * Convert UI MemberFormRecord to domain MemberRecord
+     */
+    private MemberRecord formRecordToMemberRecord(MemberFormRecord form) {
+        return new MemberRecord(
+            form.id(),
+            form.meetupId(),
+            form.name(),
+            form.email(),
+            form.lastUpdated()
+        );
     }
 }

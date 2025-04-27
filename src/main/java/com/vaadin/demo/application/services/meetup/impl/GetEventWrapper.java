@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.demo.application.services.meetup.MeetupService.MeetupEvent;
+import com.vaadin.demo.application.services.meetup.MeetupClient.MeetupEvent;
 
 public class GetEventWrapper {
   public static MeetupEvent parse(String body, ObjectMapper mapper) {

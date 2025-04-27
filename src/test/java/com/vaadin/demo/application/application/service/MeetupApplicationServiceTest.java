@@ -47,7 +47,8 @@ class MeetupApplicationServiceTest {
                 1L,
                 "member123",
                 "John Doe",
-                "john@example.com"
+                "john@example.com",
+                OffsetDateTime.now()
         );
         
         sampleParticipant = new ParticipantRecord(

@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class DevMeetupServiceImpl implements MeetupService {
+public class DevMeetupClientImpl implements MeetupClient {
 
 
     protected final Log logger = LogFactory.getLog(getClass());

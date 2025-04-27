@@ -1,5 +1,6 @@
 package com.vaadin.demo.application.data;
 
+import com.vaadin.demo.application.services.meetup.MeetupClient;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -35,7 +36,7 @@ public class Member extends AbstractEntity {
     /**
      * Updates the member data from a Meetup API response
      */
-    public void updateFromApiResponse(com.vaadin.demo.application.services.meetup.MeetupService.RSVP apiMember) {
+    public void updateFromApiResponse(MeetupClient.RSVP apiMember) {
         this.name = apiMember.name();
         this.email = apiMember.email();
         this.lastUpdated = OffsetDateTime.now();

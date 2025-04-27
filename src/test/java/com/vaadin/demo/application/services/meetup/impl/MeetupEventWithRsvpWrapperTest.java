@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.vaadin.demo.application.services.meetup.MeetupService;
-import com.vaadin.demo.application.services.meetup.MeetupService.MeetupEventWithRSVPs;
-import com.vaadin.demo.application.services.meetup.MeetupService.MemberPhoto;
-import com.vaadin.demo.application.services.meetup.MeetupService.RSVP;
+import com.vaadin.demo.application.services.meetup.MeetupClient.MeetupEventWithRSVPs;
+import com.vaadin.demo.application.services.meetup.MeetupClient.MemberPhoto;
+import com.vaadin.demo.application.services.meetup.MeetupClient.RSVP;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
