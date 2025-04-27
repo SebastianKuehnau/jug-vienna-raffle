@@ -5,6 +5,7 @@ import com.vaadin.demo.application.domain.model.MemberFormRecord;
 import com.vaadin.demo.application.services.MemberService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -43,6 +44,14 @@ public class MemberApplicationService {
      */
     public Page<MemberFormRecord> listMemberForms(Pageable pageable) {
         return memberService.list(pageable)
+                .map(MemberFormRecord::fromMember);
+    }
+    
+    /**
+     * List filtered members as form records with pagination
+     */
+    public Page<MemberFormRecord> listMemberForms(Pageable pageable, Specification<Member> filter) {
+        return memberService.list(pageable, filter)
                 .map(MemberFormRecord::fromMember);
     }
     
