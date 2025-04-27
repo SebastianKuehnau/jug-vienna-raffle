@@ -1,9 +1,7 @@
 package com.vaadin.demo.application.views.admin;
 
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.PrizeTemplate;
-import com.vaadin.demo.application.domain.model.PrizeRecord;
+import com.vaadin.demo.application.domain.model.PrizeDialogFormRecord;
 import com.vaadin.demo.application.domain.model.PrizeTemplateRecord;
 import com.vaadin.demo.application.views.MainLayout;
 import com.vaadin.demo.application.views.admin.components.IconButton;
@@ -12,7 +10,6 @@ import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -22,7 +19,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Route(value = "prize-templates", layout = MainLayout.class)
@@ -88,22 +84,16 @@ public class PrizeTemplatesView extends VerticalLayout {
     private Button createPreviewButton(PrizeTemplateRecord template) {
         Button button = new Button("Preview", VaadinIcon.EYE.create());
         button.addClickListener(event -> {
+            // Create a form record for preview (read-only)
+            PrizeDialogFormRecord previewForm = PrizeDialogFormRecord.fromPrizeTemplateRecord(template);
+            
             PrizeDialog previewDialog = new PrizeDialog(
                 // No-op functions since this is read-only
-                prize -> {}, 
-                prize -> {}
+                form -> {}, 
+                form -> {}
             );
-            Prize viewPrize = new Prize();
-            viewPrize.setId(template.id());
-            viewPrize.setName(template.name());
-            viewPrize.setDescription(template.description());
-            viewPrize.setTemplateText(template.templateText());
-            viewPrize.setVoucherCode(template.voucherCode());
-            viewPrize.setValidUntil(template.validUntil());
-            viewPrize.setTemplate(true);
             
-            previewDialog.setPrize(viewPrize);
-            // Set dialog to read-only mode
+            previewDialog.setPrizeForm(previewForm);
             previewDialog.setHeaderTitle("Preview Template");
             previewDialog.open();
         });
@@ -117,58 +107,32 @@ public class PrizeTemplatesView extends VerticalLayout {
             return;
         }
         
-        // Convert to regular JPA entity
-        Prize templateEntity = new Prize();
-        templateEntity.setId(template.id());
-        templateEntity.setName(template.name());
-        templateEntity.setDescription(template.description());
-        templateEntity.setTemplateText(template.templateText());
-        templateEntity.setVoucherCode(template.voucherCode());
-        templateEntity.setValidUntil(template.validUntil());
-        templateEntity.setTemplate(true);
+        // Convert directly to form record
+        PrizeDialogFormRecord formRecord = PrizeDialogFormRecord.fromPrizeTemplateRecord(template);
         
         PrizeDialog dialog = new PrizeDialog(this::saveTemplate, this::deleteTemplate);
-        dialog.setPrize(templateEntity);
+        dialog.setPrizeForm(formRecord);
         dialog.open();
     }
 
     private void addTemplate(ClickEvent<Button> event) {
-        // Create a new template record
-        PrizeTemplate newTemplate = new PrizeTemplate();
-        newTemplate.setName("");
-        newTemplate.setDescription("");
-        newTemplate.setTemplateText("");
-        
-        // Convert to Prize for dialog (temporary solution until UI is updated)
-        Prize uiPrize = new Prize();
-        uiPrize.setName("");
-        uiPrize.setDescription("");
-        uiPrize.setTemplateText("");
-        uiPrize.setTemplate(true);
+        // Create an empty template form
+        PrizeDialogFormRecord emptyForm = PrizeDialogFormRecord.emptyTemplate();
         
         PrizeDialog dialog = new PrizeDialog(this::saveTemplate, this::deleteTemplate);
-        dialog.setPrize(uiPrize);
+        dialog.setPrizeForm(emptyForm);
         dialog.setTemplateMode(true);
         dialog.open();
     }
 
-    private void saveTemplate(Prize templateEntity) {
-        // Convert UI Prize to domain PrizeTemplateRecord
-        PrizeTemplateRecord templateRecord = new PrizeTemplateRecord(
-            templateEntity.getId(),
-            templateEntity.getName(),
-            templateEntity.getDescription(),
-            templateEntity.getTemplateText(),
-            templateEntity.getVoucherCode(),
-            templateEntity.getValidUntil()
-        );
-        
-        raffleService.savePrizeTemplateRecord(templateRecord);
+    private void saveTemplate(PrizeDialogFormRecord formRecord) {
+        // Save directly using the application service
+        raffleService.savePrizeDialogForm(formRecord, null);
         refreshTemplates();
     }
 
-    private void deleteTemplate(Prize templateEntity) {
-        raffleService.deletePrizeTemplate(templateEntity.getId());
+    private void deleteTemplate(PrizeDialogFormRecord formRecord) {
+        raffleService.deletePrizeDialogForm(formRecord);
         refreshTemplates();
     }
 

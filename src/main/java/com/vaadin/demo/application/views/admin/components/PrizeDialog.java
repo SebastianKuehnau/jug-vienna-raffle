@@ -1,6 +1,7 @@
 package com.vaadin.demo.application.views.admin.components;
 
-import com.vaadin.demo.application.data.Prize;
+import com.vaadin.demo.application.application.service.RaffleApplicationService;
+import com.vaadin.demo.application.domain.model.PrizeDialogFormRecord;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
 import com.vaadin.demo.application.domain.model.PrizeTemplateRecord;
 import com.vaadin.flow.component.AttachEvent;
@@ -13,7 +14,6 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -29,11 +29,12 @@ import java.util.function.Supplier;
 
 public class PrizeDialog extends Dialog {
 
-    private final Binder<Prize> binder;
-    private final SerializableConsumer<Prize> saveConsumer;
-    private final SerializableConsumer<Prize> deleteConsumer;
+    private final Binder<PrizeDialogFormRecord> binder;
+    private final SerializableConsumer<PrizeDialogFormRecord> saveConsumer;
+    private final SerializableConsumer<PrizeDialogFormRecord> deleteConsumer;
     private final TextField nameField;
     private final TextArea descriptionField;
+    private final TextField winnerField;
     private final TextArea templateTextField;
     private final TextField voucherCodeField;
     private final DatePicker validUntilField;
@@ -44,11 +45,13 @@ public class PrizeDialog extends Dialog {
     private final Div templateTab;
     private final Div voucherTab;
     private final VerticalLayout rootLayout;
+    private PrizeDialogFormRecord originalForm;
     private boolean isTemplateMode = false;
     private Supplier<List<PrizeRecord>> templatesSupplier;
     private Supplier<List<PrizeTemplateRecord>> prizeTemplateSupplier;
 
-    public PrizeDialog(SerializableConsumer<Prize> saveConsumer, SerializableConsumer<Prize> deleteConsumer) {
+    public PrizeDialog(SerializableConsumer<PrizeDialogFormRecord> saveConsumer, 
+                       SerializableConsumer<PrizeDialogFormRecord> deleteConsumer) {
         super("Prize Dialog");
         this.saveConsumer = saveConsumer;
         this.deleteConsumer = deleteConsumer;
@@ -60,7 +63,7 @@ public class PrizeDialog extends Dialog {
         descriptionField.setWidthFull();
         descriptionField.setHeight("100px");
         
-        var winnerField = new TextField("Winner");
+        winnerField = new TextField("Winner");
         winnerField.setWidthFull();
         winnerField.setReadOnly(true);
         
@@ -165,14 +168,16 @@ public class PrizeDialog extends Dialog {
         hideAllTabs();
         basicInfoTab.setVisible(true);
 
-        binder = new Binder<>(Prize.class);
+        // Create binder for the form record, not the JPA entity
+        binder = new Binder<>(PrizeDialogFormRecord.class);
 
-        binder.forField(nameField).bind(Prize::getName, Prize::setName);
-        binder.forField(descriptionField).bind(Prize::getDescription, Prize::setDescription);
-        binder.forField(winnerField).bind(Prize::getWinnerName, Prize::setWinnerName);
-        binder.forField(voucherCodeField).bind(Prize::getVoucherCode, Prize::setVoucherCode);
-        binder.forField(validUntilField).bind(Prize::getValidUntil, Prize::setValidUntil);
-        binder.forField(templateTextField).bind(Prize::getTemplateText, Prize::setTemplateText);
+        // Bind fields to the form record properties
+        binder.forField(nameField).bind(PrizeDialogFormRecord::name, (form, value) -> {});
+        binder.forField(descriptionField).bind(PrizeDialogFormRecord::description, (form, value) -> {});
+        binder.forField(winnerField).bind(PrizeDialogFormRecord::winnerName, (form, value) -> {});
+        binder.forField(voucherCodeField).bind(PrizeDialogFormRecord::voucherCode, (form, value) -> {});
+        binder.forField(validUntilField).bind(PrizeDialogFormRecord::validUntil, (form, value) -> {});
+        binder.forField(templateTextField).bind(PrizeDialogFormRecord::templateText, (form, value) -> {});
 
         var cancelButton = new Button("Cancel", this::cancel);
         var saveButton = new Button("Save", this::save);
@@ -257,7 +262,7 @@ public class PrizeDialog extends Dialog {
     }
 
     private void delete(ClickEvent<Button> buttonClickEvent) {
-        this.deleteConsumer.accept(binder.getBean());
+        this.deleteConsumer.accept(this.originalForm);
         close();
     }
 
@@ -266,22 +271,34 @@ public class PrizeDialog extends Dialog {
     }
 
     private void save(ClickEvent<Button> buttonClickEvent) {
-        Prize prize = binder.getBean();
+        // Create a new form record with updated values
+        PrizeDialogFormRecord updatedForm = createFormFromFields();
         
-        // If using a template and a voucher code, update the template text
-        if (useTemplateCheck.getValue()) {
-            // Voucher code and valid until are bound directly to the model
-            // They'll be handled in the service layer
-        }
-        
-        this.saveConsumer.accept(prize);
+        // Pass the form record to the consumer
+        this.saveConsumer.accept(updatedForm);
         close();
     }
+    
+    private PrizeDialogFormRecord createFormFromFields() {
+        return new PrizeDialogFormRecord(
+            originalForm != null ? originalForm.id() : null,
+            nameField.getValue(),
+            descriptionField.getValue(),
+            templateTextField.getValue(),
+            voucherCodeField.getValue(),
+            validUntilField.getValue(),
+            winnerField.getValue(),
+            isTemplateMode
+        );
+    }
 
-    public void setPrize(Prize prize) {
-        binder.setBean(prize);
+    public void setPrizeForm(PrizeDialogFormRecord prizeForm) {
+        this.originalForm = prizeForm;
         
-        isTemplateMode = prize.isTemplate();
+        // Use readBean instead of setBean for immutable records
+        binder.readBean(prizeForm);
+        
+        isTemplateMode = prizeForm != null && prizeForm.isTemplate();
         
         if (isTemplateMode) {
             // If editing a template, don't show the template selection
@@ -314,13 +331,20 @@ public class PrizeDialog extends Dialog {
             prizeTemplateComboBox.setVisible(false);
             templateTextField.setEnabled(true);
             
-            // Set the template field in the bean
-            Prize prize = binder.getBean();
-            prize.setTemplate(true);
-            binder.setBean(prize);
+            // Create an empty template form if one doesn't exist
+            if (this.originalForm == null) {
+                this.originalForm = PrizeDialogFormRecord.emptyTemplate();
+                binder.readBean(this.originalForm);
+            }
         } else {
             setHeaderTitle("Create Prize");
             useTemplateCheck.setVisible(true);
+            
+            // Create an empty prize form if one doesn't exist
+            if (this.originalForm == null) {
+                this.originalForm = PrizeDialogFormRecord.emptyPrize();
+                binder.readBean(this.originalForm);
+            }
         }
     }
 }
