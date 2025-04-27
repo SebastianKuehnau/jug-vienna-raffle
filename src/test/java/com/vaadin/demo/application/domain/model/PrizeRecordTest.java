@@ -2,6 +2,7 @@ package com.vaadin.demo.application.domain.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,13 +18,17 @@ class PrizeRecordTest {
         RaffleRecord raffle = createSampleRaffle();
 
         // When
-        PrizeRecord prizeRecord = new PrizeRecord(id, name, winner, raffle);
+        String voucherCode = "ABC123";
+        LocalDate validUntil = LocalDate.now().plusMonths(3);
+        PrizeRecord prizeRecord = new PrizeRecord(id, name, "Prize description", "Template text", false, winner, raffle, voucherCode, validUntil);
 
         // Then
         assertEquals(id, prizeRecord.id());
         assertEquals(name, prizeRecord.name());
         assertEquals(winner, prizeRecord.winner());
         assertEquals(raffle, prizeRecord.raffle());
+        assertEquals(voucherCode, prizeRecord.voucherCode());
+        assertEquals(validUntil, prizeRecord.validUntil());
     }
 
     @Test
@@ -45,7 +50,7 @@ class PrizeRecordTest {
     @Test
     void testWithWinner() {
         // Given
-        PrizeRecord prizeRecord = new PrizeRecord(1L, "Test Prize", null, createSampleRaffle());
+        PrizeRecord prizeRecord = new PrizeRecord(1L, "Test Prize", "Description", null, false, null, createSampleRaffle(), "XYZ456", LocalDate.now().plusMonths(6));
         ParticipantRecord winner = createSampleParticipant();
 
         // When
@@ -58,6 +63,8 @@ class PrizeRecordTest {
         assertEquals(prizeRecord.id(), updatedPrize.id());
         assertEquals(prizeRecord.name(), updatedPrize.name());
         assertEquals(prizeRecord.raffle(), updatedPrize.raffle());
+        assertEquals(prizeRecord.voucherCode(), updatedPrize.voucherCode());
+        assertEquals(prizeRecord.validUntil(), updatedPrize.validUntil());
     }
 
     private ParticipantRecord createSampleParticipant() {

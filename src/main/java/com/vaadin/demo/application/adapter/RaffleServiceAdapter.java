@@ -1,24 +1,22 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Participant;
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.data.*;
 import com.vaadin.demo.application.domain.model.*;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import com.vaadin.demo.application.repository.MeetupEventRepository;
 import com.vaadin.demo.application.repository.PrizeRepository;
+import com.vaadin.demo.application.repository.PrizeTemplateRepository;
 import com.vaadin.demo.application.repository.RaffleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
 
 /**
  * Adapter implementation of the RafflePort interface
@@ -31,8 +29,11 @@ public class RaffleServiceAdapter implements RafflePort {
 
     private final RaffleRepository raffleRepository;
     private final PrizeRepository prizeRepository;
+    private final PrizeTemplateRepository prizeTemplateRepository;
     private final MeetupEventRepository meetupEventRepository;
     private final MeetupPort meetupPort;
+    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
     @Transactional(readOnly = true)
@@ -66,6 +67,108 @@ public class RaffleServiceAdapter implements RafflePort {
         return prizeRepository.findByRaffle(raffleEntity).stream()
             .map(Mapper::toPrizeRecord)
             .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<PrizeRecord> getAllPrizeTemplates() {
+        return prizeRepository.findByTemplateTrue().stream()
+            .map(Mapper::toPrizeRecord)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<PrizeTemplateRecord> getAllPrizeTemplateRecords() {
+        return prizeTemplateRepository.findAll().stream()
+            .map(Mapper::toPrizeTemplateRecord)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<PrizeRecord> getPrizeTemplatesByName(String namePattern) {
+        return prizeRepository.findByTemplateTrueAndNameContaining(namePattern).stream()
+            .map(Mapper::toPrizeRecord)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<PrizeTemplateRecord> getPrizeTemplateRecordsByName(String namePattern) {
+        return prizeTemplateRepository.findByNameContainingIgnoreCase(namePattern).stream()
+            .map(Mapper::toPrizeTemplateRecord)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PrizeRecord> getPrizeTemplateById(Long id) {
+        return prizeRepository.findById(id)
+            .filter(Prize::isTemplate)
+            .map(Mapper::toPrizeRecord);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PrizeTemplateRecord> getPrizeTemplateRecordById(Long id) {
+        return prizeTemplateRepository.findById(id)
+            .map(Mapper::toPrizeTemplateRecord);
+    }
+    
+    @Override
+    @Transactional
+    public PrizeRecord createPrizeFromTemplate(Long templateId, RaffleRecord raffle, String voucherCode) {
+        // Get the template
+        Prize template = prizeRepository.findById(templateId)
+            .filter(Prize::isTemplate)
+            .orElseThrow(() -> new IllegalArgumentException("Prize template not found: " + templateId));
+        
+        // Create a new prize from the template
+        Prize prize = template.createFromTemplate();
+        prize.setVoucherCode(voucherCode);
+        
+        // Set raffle
+        Raffle raffleEntity = raffleRepository.findById(raffle.id())
+            .orElseThrow(() -> new IllegalArgumentException("Raffle not found: " + raffle.id()));
+        prize.setRaffle(raffleEntity);
+        
+        // Process template text with voucher code
+        String raffleDate = raffleEntity.getEvent().getDateTime() != null ? 
+            raffleEntity.getEvent().getDateTime().format(DATE_FORMATTER) : "";
+        prize.setTemplateText(prize.processTemplateText(raffleDate, null, voucherCode));
+        
+        // Save and return
+        Prize savedPrize = prizeRepository.save(prize);
+        return Mapper.toPrizeRecord(savedPrize);
+    }
+    
+    @Override
+    @Transactional
+    public PrizeRecord createPrizeFromTemplateRecord(Long templateId, RaffleRecord raffle, String voucherCode) {
+        // Get the template
+        PrizeTemplate template = prizeTemplateRepository.findById(templateId)
+            .orElseThrow(() -> new IllegalArgumentException("Prize template not found: " + templateId));
+        
+        // Create a new prize from the template
+        Prize prize = template.createPrize();
+        if (voucherCode != null && !voucherCode.trim().isEmpty()) {
+            prize.setVoucherCode(voucherCode);
+        }
+        
+        // Set raffle
+        Raffle raffleEntity = raffleRepository.findById(raffle.id())
+            .orElseThrow(() -> new IllegalArgumentException("Raffle not found: " + raffle.id()));
+        prize.setRaffle(raffleEntity);
+        
+        // Process template text with voucher code
+        String raffleDate = raffleEntity.getEvent().getDateTime() != null ? 
+            raffleEntity.getEvent().getDateTime().format(DATE_FORMATTER) : "";
+        prize.setTemplateText(prize.processTemplateText(raffleDate, null, voucherCode));
+        
+        // Save and return
+        Prize savedPrize = prizeRepository.save(prize);
+        return Mapper.toPrizeRecord(savedPrize);
     }
 
     @Override
@@ -123,6 +226,11 @@ public class RaffleServiceAdapter implements RafflePort {
         
         // Update fields
         prize.setName(prizeRecord.name());
+        prize.setDescription(prizeRecord.description());
+        prize.setTemplateText(prizeRecord.templateText());
+        prize.setTemplate(false); // Ensure it's not a template
+        prize.setVoucherCode(prizeRecord.voucherCode());
+        prize.setValidUntil(prizeRecord.validUntil());
         
         // Set raffle if available
         if (prizeRecord.raffle() != null && prizeRecord.raffle().id() != null) {
@@ -135,6 +243,48 @@ public class RaffleServiceAdapter implements RafflePort {
         
         Prize savedPrize = prizeRepository.save(prize);
         return Mapper.toPrizeRecord(savedPrize);
+    }
+    
+    @Override
+    @Transactional
+    public PrizeRecord savePrizeTemplate(PrizeRecord prizeTemplate) {
+        // Find existing template or create a new one
+        Prize template = prizeTemplate.id() != null 
+            ? prizeRepository.findById(prizeTemplate.id())
+                .orElseThrow(() -> new IllegalArgumentException("Prize template not found: " + prizeTemplate.id()))
+            : new Prize();
+        
+        // Update fields
+        template.setName(prizeTemplate.name());
+        template.setDescription(prizeTemplate.description());
+        template.setTemplateText(prizeTemplate.templateText());
+        template.setTemplate(true); // Ensure it's a template
+        template.setRaffle(null); // Templates are not associated with raffles
+        template.setVoucherCode(prizeTemplate.voucherCode());
+        template.setValidUntil(prizeTemplate.validUntil());
+        
+        Prize savedTemplate = prizeRepository.save(template);
+        return Mapper.toPrizeRecord(savedTemplate);
+    }
+    
+    @Override
+    @Transactional
+    public PrizeTemplateRecord savePrizeTemplateRecord(PrizeTemplateRecord prizeTemplateRecord) {
+        // Find existing template or create a new one
+        PrizeTemplate template = prizeTemplateRecord.id() != null 
+            ? prizeTemplateRepository.findById(prizeTemplateRecord.id())
+                .orElseThrow(() -> new IllegalArgumentException("Prize template not found: " + prizeTemplateRecord.id()))
+            : new PrizeTemplate();
+        
+        // Update fields
+        template.setName(prizeTemplateRecord.name());
+        template.setDescription(prizeTemplateRecord.description());
+        template.setTemplateText(prizeTemplateRecord.templateText());
+        template.setVoucherCode(prizeTemplateRecord.voucherCode());
+        template.setValidUntil(prizeTemplateRecord.validUntil());
+        
+        PrizeTemplate savedTemplate = prizeTemplateRepository.save(template);
+        return Mapper.toPrizeTemplateRecord(savedTemplate);
     }
 
     @Override
@@ -156,6 +306,20 @@ public class RaffleServiceAdapter implements RafflePort {
         prize.setWinner(participant);
         prize.setWinnerName(updatedParticipant.member() != null ? updatedParticipant.member().name() : null);
         
+        // Update the template text with winner name if applicable
+        if (prize.getTemplateText() != null) {
+            Raffle raffle = prize.getRaffle();
+            String raffleDate = raffle != null && raffle.getEvent() != null && raffle.getEvent().getDateTime() != null ?
+                raffle.getEvent().getDateTime().format(DATE_FORMATTER) : "";
+            
+            String processedText = prize.processTemplateText(
+                raffleDate, 
+                updatedParticipant.member() != null ? updatedParticipant.member().name() : null, 
+                prize.getVoucherCode()
+            );
+            prize.setTemplateText(processedText);
+        }
+        
         Prize savedPrize = prizeRepository.save(prize);
         return Mapper.toPrizeRecord(savedPrize);
     }
@@ -164,5 +328,18 @@ public class RaffleServiceAdapter implements RafflePort {
     @Transactional
     public void deletePrize(Long prizeId) {
         prizeRepository.deleteById(prizeId);
+    }
+    
+    @Override
+    @Transactional
+    public void deletePrizeTemplate(Long templateId) {
+        // Check if it's a Prize in template mode or a PrizeTemplate
+        if (prizeRepository.existsById(templateId)) {
+            prizeRepository.deleteById(templateId);
+        } else if (prizeTemplateRepository.existsById(templateId)) {
+            prizeTemplateRepository.deleteById(templateId);
+        } else {
+            throw new IllegalArgumentException("Prize template not found: " + templateId);
+        }
     }
 }

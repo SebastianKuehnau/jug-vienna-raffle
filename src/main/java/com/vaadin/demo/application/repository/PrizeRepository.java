@@ -13,4 +13,8 @@ public interface PrizeRepository extends
         JpaSpecificationExecutor<Prize> {
 
     List<Prize> findByRaffle(Raffle raffle);
+    
+    List<Prize> findByTemplateTrue();
+    
+    List<Prize> findByTemplateTrueAndNameContaining(String namePattern);
 }

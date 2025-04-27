@@ -1,9 +1,6 @@
 package com.vaadin.demo.application.domain.port;
 
-import com.vaadin.demo.application.domain.model.EventRecord;
-import com.vaadin.demo.application.domain.model.ParticipantRecord;
-import com.vaadin.demo.application.domain.model.PrizeRecord;
-import com.vaadin.demo.application.domain.model.RaffleRecord;
+import com.vaadin.demo.application.domain.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +32,46 @@ public interface RafflePort {
     List<PrizeRecord> getPrizesForRaffle(RaffleRecord raffle);
     
     /**
+     * Get all prize templates (DEPRECATED: use getAllPrizeTemplateRecords instead)
+     */
+    List<PrizeRecord> getAllPrizeTemplates();
+    
+    /**
+     * Get all prize templates as PrizeTemplateRecord
+     */
+    List<PrizeTemplateRecord> getAllPrizeTemplateRecords();
+    
+    /**
+     * Get prize templates by name (partial match) (DEPRECATED: use getPrizeTemplateRecordsByName instead)
+     */
+    List<PrizeRecord> getPrizeTemplatesByName(String namePattern);
+    
+    /**
+     * Get prize templates by name as PrizeTemplateRecord (partial match)
+     */
+    List<PrizeTemplateRecord> getPrizeTemplateRecordsByName(String namePattern);
+    
+    /**
+     * Get a prize template by ID (DEPRECATED: use getPrizeTemplateRecordById instead)
+     */
+    Optional<PrizeRecord> getPrizeTemplateById(Long id);
+    
+    /**
+     * Get a prize template by ID as PrizeTemplateRecord
+     */
+    Optional<PrizeTemplateRecord> getPrizeTemplateRecordById(Long id);
+    
+    /**
+     * Create a new prize from a template (DEPRECATED: use createPrizeFromTemplateRecord instead)
+     */
+    PrizeRecord createPrizeFromTemplate(Long templateId, RaffleRecord raffle, String voucherCode);
+    
+    /**
+     * Create a new prize from a template record
+     */
+    PrizeRecord createPrizeFromTemplateRecord(Long templateId, RaffleRecord raffle, String voucherCode);
+    
+    /**
      * Get eligible participants for a raffle
      */
     List<ParticipantRecord> getEligibleParticipants(RaffleRecord raffle);
@@ -55,6 +92,16 @@ public interface RafflePort {
     PrizeRecord savePrize(PrizeRecord prize);
     
     /**
+     * Save a prize template (DEPRECATED: use savePrizeTemplateRecord instead)
+     */
+    PrizeRecord savePrizeTemplate(PrizeRecord prizeTemplate);
+    
+    /**
+     * Save a prize template as PrizeTemplateRecord
+     */
+    PrizeTemplateRecord savePrizeTemplateRecord(PrizeTemplateRecord prizeTemplate);
+    
+    /**
      * Award a prize to a participant
      */
     PrizeRecord awardPrize(PrizeRecord prize, ParticipantRecord participant);
@@ -63,4 +110,9 @@ public interface RafflePort {
      * Delete a prize
      */
     void deletePrize(Long prizeId);
+    
+    /**
+     * Delete a prize template
+     */
+    void deletePrizeTemplate(Long templateId);
 }

@@ -17,6 +17,11 @@ else
   echo "PostgreSQL container is already running."
 fi
 
+# Run the fix-flyway script to ensure the database schema is properly configured
+echo "Running Flyway fix script..."
+./fix-flyway.sh
+
 # Start the application
 echo "Starting the application..."
-./mvnw spring-boot:run
+# Run with flyway.baseline-on-migrate=true
+./mvnw spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.flyway.baseline-on-migrate=true"

@@ -4,6 +4,7 @@ import com.vaadin.demo.application.data.MeetupEvent;
 import com.vaadin.demo.application.data.Member;
 import com.vaadin.demo.application.data.Participant;
 import com.vaadin.demo.application.data.Prize;
+import com.vaadin.demo.application.data.PrizeTemplate;
 import com.vaadin.demo.application.data.Raffle;
 // Import Java class for API models
 import com.vaadin.demo.application.services.meetup.MeetupService;
@@ -91,8 +92,29 @@ public class Mapper {
         return new PrizeRecord(
             entity.getId(),
             entity.getName(),
+            entity.getDescription(),
+            entity.getTemplateText(),
+            entity.isTemplate(),
             toParticipantRecord(entity.getWinner()),
-            toRaffleRecord(entity.getRaffle(), false) // Avoid infinite recursion
+            toRaffleRecord(entity.getRaffle(), false), // Avoid infinite recursion
+            entity.getVoucherCode(),
+            entity.getValidUntil()
+        );
+    }
+    
+    /**
+     * Convert JPA PrizeTemplate to domain PrizeTemplateRecord
+     */
+    public static PrizeTemplateRecord toPrizeTemplateRecord(PrizeTemplate entity) {
+        if (entity == null) return null;
+        
+        return new PrizeTemplateRecord(
+            entity.getId(),
+            entity.getName(),
+            entity.getDescription(),
+            entity.getTemplateText(),
+            entity.getVoucherCode(),
+            entity.getValidUntil()
         );
     }
     

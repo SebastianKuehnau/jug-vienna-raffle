@@ -1,25 +1,38 @@
 package com.vaadin.demo.application.views.admin.details;
 
-import com.vaadin.demo.application.data.Prize;
+import com.vaadin.demo.application.domain.model.PrizeFormRecord;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
+import com.vaadin.demo.application.domain.model.PrizeTemplateRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
-import com.vaadin.demo.application.services.PrizeService;
+import com.vaadin.demo.application.views.admin.PrizeTemplatesView;
 import com.vaadin.demo.application.views.admin.SpinWheelView;
 import com.vaadin.demo.application.views.admin.components.IconButton;
-import com.vaadin.demo.application.views.admin.components.PrizeDialog;
+import com.vaadin.demo.application.views.admin.components.PrizeFormDialog;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.theme.lumo.LumoUtility;
+
+import java.util.List;
 
 @Route(value = "prizes", layout = DetailsMainLayout.class)
 @com.vaadin.flow.server.auth.AnonymousAllowed
@@ -34,68 +47,202 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
     public PrizesCrudSubView(RaffleApplicationService raffleService) {
         this.raffleService = raffleService;
 
-        prizeGrid.setColumns("name", "winner");
+        prizeGrid.setColumns("name", "description", "winner", "voucherCode", "validUntil");
+        prizeGrid.getColumnByKey("name").setHeader("Prize").setAutoWidth(true);
+        prizeGrid.getColumnByKey("description").setHeader("Description").setAutoWidth(true);
+        prizeGrid.getColumnByKey("winner").setHeader("Winner").setAutoWidth(true);
+        prizeGrid.getColumnByKey("voucherCode").setHeader("Voucher Code").setAutoWidth(true);
+        prizeGrid.getColumnByKey("validUntil").setHeader("Valid Until").setAutoWidth(true);
         prizeGrid.asSingleSelect().addValueChangeListener(this::selectPrize);
         prizeGrid.addComponentColumn(this::createRaffleButton).setHeader("Raffle").setSortable(false);
         prizeGrid.setWidthFull();
 
-        var addButton = new IconButton(VaadinIcon.PLUS.create(), this::addPrize);
-        setAlignSelf(Alignment.END, addButton);
+        Button addButton = new IconButton(VaadinIcon.PLUS.create(), this::addPrize);
+        addButton.setText("Add Prize");
 
-        add(prizeGrid, addButton);
+        Button fromTemplateButton = new Button("From Template", VaadinIcon.COPY.create());
+        fromTemplateButton.addClickListener(this::addPrizeFromTemplate);
+
+        Button manageTemplatesButton = new Button("Manage Templates", VaadinIcon.LIST.create());
+        manageTemplatesButton.addClickListener(e -> {
+            getUI().ifPresent(ui -> ui.navigate("prize-templates"));
+        });
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(manageTemplatesButton, fromTemplateButton, addButton);
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+
+        add(prizeGrid, buttonLayout);
+        setSizeFull();
     }
 
     private Component createRaffleButton(PrizeRecord prize) {
         var button = new Button("Start Raffle", VaadinIcon.SPINNER.create());
-        button.addClickListener(event -> event.getSource().getUI()
-                .ifPresent(ui -> ui.navigate(SpinWheelView.class, prize.id())));
+        button.addClickListener(event -> {
+            if (prize != null && prize.id() != null) {
+                String url = "raffle-admin/spin-wheel/" + prize.id();
+                event.getSource().getUI().ifPresent(ui -> ui.navigate(url));
+            } else {
+                Notification.show("Prize ID is missing or invalid", 3000, Notification.Position.MIDDLE);
+            }
+        });
         button.setEnabled(prize.winner() == null);
         button.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         return button;
     }
 
     private void selectPrize(AbstractField.ComponentValueChangeEvent<Grid<PrizeRecord>, PrizeRecord> event) {
-        // We need to adapt domain records to JPA entities for the PrizeDialog
-        // This should be refactored in future to use domain records directly
-        var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
-        // Convert domain PrizeRecord to JPA entity
-        Prize entityPrize = new Prize();
         PrizeRecord record = event.getValue();
-        if (record != null) {
-            entityPrize.setId(record.id());
-            entityPrize.setName(record.name());
+        if (record == null) {
+            return;
         }
-        prizeDialog.setPrize(entityPrize);
+
+        // Convert domain PrizeRecord to PrizeFormRecord for the UI
+        PrizeFormRecord formRecord = PrizeFormRecord.fromPrizeRecord(record);
+
+        var prizeDialog = new PrizeFormDialog(this::savePrizeForm, this::deletePrize);
+        prizeDialog.setPrizeForm(formRecord);
         prizeDialog.open();
     }
 
     private void addPrize(ClickEvent<Button> buttonClickEvent) {
-        // For future: enhance PrizeDialog to work with domain records
-        var prizeDialog = new PrizeDialog(this::savePrize, this::deletePrize);
-        // Create an empty Prize entity for the dialog
-        Prize emptyPrize = new Prize();
-        emptyPrize.setName("");
-        prizeDialog.setPrize(emptyPrize);
+        PrizeFormRecord emptyForm = PrizeFormRecord.empty();
+
+        var prizeDialog = new PrizeFormDialog(this::savePrizeForm, this::deletePrize);
+        prizeDialog.setPrizeForm(emptyForm);
+        prizeDialog.setTemplateSupplier(() -> raffleService.getAllPrizeTemplates());
         prizeDialog.open();
     }
 
-    private void deletePrize(Prize prizeEntity) {
-        // Convert entity-based call to domain-based call
-        raffleService.deletePrize(prizeEntity.getId());
+    private void addPrizeFromTemplate(ClickEvent<Button> event) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Create Prize from Template");
+
+        // Try to get PrizeTemplateRecords first, if that list is empty, fall back to legacy templates
+        List<PrizeTemplateRecord> prizeTemplates = raffleService.getAllPrizeTemplateRecords();
+        List<PrizeRecord> legacyTemplates = raffleService.getAllPrizeTemplates();
+
+        if (prizeTemplates.isEmpty() && legacyTemplates.isEmpty()) {
+            dialog.add(new Span("No templates available. Please create a template first."));
+            dialog.add(new Button("Close", e -> dialog.close()));
+            dialog.open();
+            return;
+        }
+
+        // Choose which template selector to show
+        if (!prizeTemplates.isEmpty()) {
+            // We have new templates, use them
+            ComboBox<PrizeTemplateRecord> templateCombo = new ComboBox<>("Select Template");
+            templateCombo.setItems(prizeTemplates);
+            templateCombo.setItemLabelGenerator(PrizeTemplateRecord::name);
+            templateCombo.setWidthFull();
+
+            TextField voucherField = new TextField("Voucher Code (optional)");
+            voucherField.setWidthFull();
+            voucherField.setHelperText("If this prize requires a voucher code, enter it here");
+
+            DatePicker validUntilField = new DatePicker("Valid Until (optional)");
+            validUntilField.setWidthFull();
+            validUntilField.setHelperText("If this prize has an expiration date, enter it here");
+
+            Button cancelButton = new Button("Cancel", e -> dialog.close());
+            Button createButton = new Button("Create Prize", e -> {
+                PrizeTemplateRecord template = templateCombo.getValue();
+                if (template != null) {
+                    String voucherCode = voucherField.getValue();
+                    // Use the new template-based method
+                    PrizeRecord newPrize = raffleService.createPrizeFromTemplateRecord(
+                        template.id(),
+                        this.raffle,
+                        voucherCode
+                    );
+                    refreshPrizes();
+                    dialog.close();
+                }
+            });
+            createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            createButton.setEnabled(false);
+
+            templateCombo.addValueChangeListener(e -> {
+                createButton.setEnabled(e.getValue() != null);
+
+                // Auto-fill voucher code if template has one
+                if (e.getValue() != null && e.getValue().voucherCode() != null) {
+                    voucherField.setValue(e.getValue().voucherCode());
+                }
+
+                // Auto-fill valid until date if template has one
+                if (e.getValue() != null && e.getValue().validUntil() != null) {
+                    validUntilField.setValue(e.getValue().validUntil());
+                }
+            });
+
+            HorizontalLayout buttons = new HorizontalLayout(cancelButton, createButton);
+            buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+            buttons.setWidthFull();
+
+            VerticalLayout layout = new VerticalLayout(
+                new H3("Use an existing template to create a prize"),
+                templateCombo,
+                voucherField,
+                validUntilField,
+                buttons
+            );
+            dialog.add(layout);
+        } else {
+            // Fall back to legacy template
+            ComboBox<PrizeRecord> templateCombo = new ComboBox<>("Select Legacy Template");
+            templateCombo.setItems(legacyTemplates);
+            templateCombo.setItemLabelGenerator(PrizeRecord::name);
+            templateCombo.setWidthFull();
+
+            TextField voucherField = new TextField("Voucher Code (optional)");
+            voucherField.setWidthFull();
+            voucherField.setHelperText("If this prize requires a voucher code, enter it here");
+
+            Button cancelButton = new Button("Cancel", e -> dialog.close());
+            Button createButton = new Button("Create Prize", e -> {
+                PrizeRecord template = templateCombo.getValue();
+                if (template != null) {
+                    String voucherCode = voucherField.getValue();
+                    PrizeRecord newPrize = raffleService.createPrizeFromTemplate(
+                        template.id(),
+                        this.raffle,
+                        voucherCode
+                    );
+                    refreshPrizes();
+                    dialog.close();
+                }
+            });
+            createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            createButton.setEnabled(false);
+
+            templateCombo.addValueChangeListener(e -> createButton.setEnabled(e.getValue() != null));
+
+            HorizontalLayout buttons = new HorizontalLayout(cancelButton, createButton);
+            buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+            buttons.setWidthFull();
+
+            VerticalLayout layout = new VerticalLayout(
+                new H3("Use an existing template to create a prize"),
+                templateCombo,
+                voucherField,
+                buttons
+            );
+            dialog.add(layout);
+        }
+
+        dialog.setWidth("500px");
+        dialog.open();
+    }
+
+    private void deletePrize(Long prizeId) {
+        raffleService.deletePrize(prizeId);
         refreshPrizes();
     }
 
-    private void savePrize(Prize prizeEntity) {
-        // Create a PrizeRecord from the entity (simplified)
-        // In a full implementation, we would need a proper mapper
-        PrizeRecord prizeRecord = new PrizeRecord(
-            prizeEntity.getId(),
-            prizeEntity.getName(),
-            null, // No winner mapping yet
-            this.raffle
-        );
-
-        raffleService.savePrize(prizeRecord);
+    private void savePrizeForm(PrizeFormRecord prizeForm) {
+        raffleService.savePrizeForm(prizeForm, this.raffle);
         refreshPrizes();
     }
 

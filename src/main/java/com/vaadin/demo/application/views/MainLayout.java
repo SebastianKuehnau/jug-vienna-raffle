@@ -84,7 +84,10 @@ public class MainLayout extends AppLayout {
             SideNavItem sideNavItem = createSideNavItem(entry);
             nav.addItem(sideNavItem);
         });
-
+        
+        // Add PrizeTemplatesView manually
+        SideNavItem prizeTemplates = new SideNavItem("Prize Templates", "prize-templates");
+        nav.addItem(prizeTemplates);
 
         return nav;
     }

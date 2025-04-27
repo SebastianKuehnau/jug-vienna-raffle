@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,8 +54,13 @@ class RaffleApplicationServiceTest {
         samplePrize = new PrizeRecord(
                 1L,
                 "Test Prize",
+                "Prize Description", 
+                "Prize Template Text",
+                false,
                 null,
-                sampleRaffle
+                sampleRaffle,
+                "TEST123",
+                LocalDate.now().plusMonths(3)
         );
         
         MemberRecord sampleMember = new MemberRecord(
@@ -194,8 +200,13 @@ class RaffleApplicationServiceTest {
         PrizeRecord prizeWithWinner = new PrizeRecord(
                 samplePrize.id(),
                 samplePrize.name(),
+                samplePrize.description(),
+                samplePrize.templateText(),
+                samplePrize.isTemplate(),
                 sampleParticipant,
-                samplePrize.raffle()
+                samplePrize.raffle(),
+                samplePrize.voucherCode(),
+                samplePrize.validUntil()
         );
         when(rafflePort.awardPrize(samplePrize, sampleParticipant)).thenReturn(prizeWithWinner);
 

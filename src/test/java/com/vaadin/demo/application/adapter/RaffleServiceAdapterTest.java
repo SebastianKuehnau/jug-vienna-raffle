@@ -14,6 +14,7 @@ import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.repository.MeetupEventRepository;
 import com.vaadin.demo.application.repository.PrizeRepository;
+import com.vaadin.demo.application.repository.PrizeTemplateRepository;
 import com.vaadin.demo.application.repository.RaffleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class RaffleServiceAdapterTest {
 
     @Mock
     private PrizeRepository prizeRepository;
+    
+    @Mock
+    private PrizeTemplateRepository prizeTemplateRepository;
 
     @Mock
     private MeetupEventRepository meetupEventRepository;
@@ -61,6 +65,7 @@ class RaffleServiceAdapterTest {
         raffleServiceAdapter = new RaffleServiceAdapter(
                 raffleRepository,
                 prizeRepository,
+                prizeTemplateRepository,
                 meetupEventRepository,
                 meetupPort
         );
