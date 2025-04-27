@@ -1,6 +1,7 @@
 package com.vaadin.demo.application.application.service;
 
 import com.vaadin.demo.application.domain.model.*;
+import com.vaadin.demo.application.domain.port.MeetupPort;
 import com.vaadin.demo.application.domain.port.RafflePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,9 @@ class RaffleApplicationServiceTest {
 
     @Mock
     private RafflePort rafflePort;
+    
+    @Mock
+    private MeetupPort meetupPort;
 
     private RaffleApplicationService raffleApplicationService;
 
@@ -31,7 +35,7 @@ class RaffleApplicationServiceTest {
 
     @BeforeEach
     void setUp() {
-        raffleApplicationService = new RaffleApplicationService(rafflePort);
+        raffleApplicationService = new RaffleApplicationService(rafflePort, meetupPort);
         
         // Create sample test data
         sampleEvent = new EventRecord(
@@ -165,6 +169,38 @@ class RaffleApplicationServiceTest {
 
         // Then
         assertEquals(sampleRaffle, result);
+        verify(rafflePort).createRaffle(sampleEvent);
+    }
+    
+    @Test
+    void getAllRafflesShouldDelegateToPort() {
+        // Given
+        List<RaffleRecord> raffles = List.of(sampleRaffle);
+        when(rafflePort.getAllRaffles()).thenReturn(raffles);
+
+        // When
+        List<RaffleRecord> result = raffleApplicationService.getAllRaffles();
+
+        // Then
+        assertEquals(raffles, result);
+        verify(rafflePort).getAllRaffles();
+    }
+    
+    @Test
+    void createRaffleFromFormShouldDelegateToPort() {
+        // Given
+        String meetupEventId = "event123";
+        when(meetupPort.getEventByMeetupId(meetupEventId)).thenReturn(Optional.of(sampleEvent));
+        when(rafflePort.createRaffle(sampleEvent)).thenReturn(sampleRaffle);
+
+        // When
+        RaffleFormRecord result = raffleApplicationService.createRaffleFromForm(meetupEventId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(sampleRaffle.id(), result.id());
+        assertEquals(meetupEventId, result.meetupEventId());
+        verify(meetupPort).getEventByMeetupId(meetupEventId);
         verify(rafflePort).createRaffle(sampleEvent);
     }
 
