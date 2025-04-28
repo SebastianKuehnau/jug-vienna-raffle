@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.application.service;
 
-import com.vaadin.demo.application.data.Member;
+import com.vaadin.demo.application.adapter.persistence.data.Member;
 import com.vaadin.demo.application.domain.model.MemberFormRecord;
 import com.vaadin.demo.application.domain.model.MemberRecord;
 import com.vaadin.demo.application.domain.port.MemberPort;

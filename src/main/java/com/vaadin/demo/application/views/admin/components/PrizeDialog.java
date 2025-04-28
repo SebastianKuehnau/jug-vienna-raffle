@@ -50,7 +50,7 @@ public class PrizeDialog extends Dialog {
     private Supplier<List<PrizeRecord>> templatesSupplier;
     private Supplier<List<PrizeTemplateRecord>> prizeTemplateSupplier;
 
-    public PrizeDialog(SerializableConsumer<PrizeDialogFormRecord> saveConsumer, 
+    public PrizeDialog(SerializableConsumer<PrizeDialogFormRecord> saveConsumer,
                        SerializableConsumer<PrizeDialogFormRecord> deleteConsumer) {
         super("Prize Dialog");
         this.saveConsumer = saveConsumer;
@@ -58,54 +58,54 @@ public class PrizeDialog extends Dialog {
 
         nameField = new TextField("Name");
         nameField.setWidthFull();
-        
+
         descriptionField = new TextArea("Description");
         descriptionField.setWidthFull();
         descriptionField.setHeight("100px");
-        
+
         winnerField = new TextField("Winner");
         winnerField.setWidthFull();
         winnerField.setReadOnly(true);
-        
+
         voucherCodeField = new TextField("Voucher Code");
         voucherCodeField.setWidthFull();
         voucherCodeField.setHelperText("If this prize has a voucher code, enter it here");
-        
+
         validUntilField = new DatePicker("Valid Until");
         validUntilField.setWidthFull();
         validUntilField.setHelperText("Optional date until when the prize is valid");
-        
+
         templateComboBox = new ComboBox<>("Select Legacy Template");
         templateComboBox.setVisible(false);
         templateComboBox.setEnabled(false);
         templateComboBox.setWidthFull();
         templateComboBox.setItemLabelGenerator(PrizeRecord::name);
-        
+
         prizeTemplateComboBox = new ComboBox<>("Select Template");
         prizeTemplateComboBox.setVisible(false);
         prizeTemplateComboBox.setEnabled(false);
         prizeTemplateComboBox.setWidthFull();
         prizeTemplateComboBox.setItemLabelGenerator(PrizeTemplateRecord::name);
-        
+
         templateTextField = new TextArea("Template Text");
         templateTextField.setWidthFull();
         templateTextField.setHeight("200px");
         templateTextField.setHelperText("Available placeholders: {{PRIZE_NAME}}, {{WINNER_NAME}}, {{RAFFLE_DATE}}, {{VOUCHER_CODE}}, {{VALID_UNTIL}}");
-        
+
         useTemplateCheck = new Checkbox("Use Template");
         useTemplateCheck.addValueChangeListener(e -> {
             boolean useTemplate = e.getValue();
             boolean usePrizeTemplate = prizeTemplateSupplier != null;
-            
+
             // Show either the legacy template or new prize template combo box
             templateComboBox.setVisible(useTemplate && !usePrizeTemplate);
             templateComboBox.setEnabled(useTemplate && !usePrizeTemplate);
-            
+
             prizeTemplateComboBox.setVisible(useTemplate && usePrizeTemplate);
             prizeTemplateComboBox.setEnabled(useTemplate && usePrizeTemplate);
-            
+
             templateTextField.setEnabled(!useTemplate || isTemplateMode);
-            
+
             // Update the display based on selected template
             if (useTemplate) {
                 if (usePrizeTemplate && prizeTemplateComboBox.getValue() != null) {
@@ -115,45 +115,45 @@ public class PrizeDialog extends Dialog {
                 }
             }
         });
-        
+
         templateComboBox.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 updateTemplateDisplay(e.getValue());
             }
         });
-        
+
         prizeTemplateComboBox.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 updateTemplateDisplay(e.getValue());
             }
         });
-        
+
         // Create tabs
         basicInfoTab = new Div();
         basicInfoTab.add(new VerticalLayout(nameField, descriptionField, winnerField));
-        
+
         voucherTab = new Div();
         voucherTab.add(new VerticalLayout(
             new H4("Voucher Details"),
             voucherCodeField,
             validUntilField
         ));
-        
+
         templateTab = new Div();
         templateTab.add(new VerticalLayout(
-            useTemplateCheck, 
+            useTemplateCheck,
             templateComboBox,
             prizeTemplateComboBox,
-            new H4("Template Text"), 
+            new H4("Template Text"),
             templateTextField
         ));
-        
+
         Tab tab1 = new Tab("Basic Info");
         Tab tab2 = new Tab("Voucher Details");
         Tab tab3 = new Tab("Template & Text");
-        
+
         Tabs tabs = new Tabs(tab1, tab2, tab3);
-        
+
         tabs.addSelectedChangeListener(event -> {
             hideAllTabs();
             if (event.getSelectedTab().equals(tab1)) {
@@ -164,7 +164,7 @@ public class PrizeDialog extends Dialog {
                 templateTab.setVisible(true);
             }
         });
-        
+
         hideAllTabs();
         basicInfoTab.setVisible(true);
 
@@ -203,41 +203,41 @@ public class PrizeDialog extends Dialog {
         setWidth("800px");
         setHeight("600px");
     }
-    
+
     private void hideAllTabs() {
         basicInfoTab.setVisible(false);
         voucherTab.setVisible(false);
         templateTab.setVisible(false);
     }
-    
+
     private void updateTemplateDisplay(PrizeRecord template) {
         if (template != null) {
             nameField.setValue(template.name() != null ? template.name() : "");
             descriptionField.setValue(template.description() != null ? template.description() : "");
             templateTextField.setValue(template.templateText() != null ? template.templateText() : "");
-            
+
             // Set new fields if they exist
             if (template.voucherCode() != null) {
                 voucherCodeField.setValue(template.voucherCode());
             }
-            
+
             if (template.validUntil() != null) {
                 validUntilField.setValue(template.validUntil());
             }
         }
     }
-    
+
     private void updateTemplateDisplay(PrizeTemplateRecord template) {
         if (template != null) {
             nameField.setValue(template.name() != null ? template.name() : "");
             descriptionField.setValue(template.description() != null ? template.description() : "");
             templateTextField.setValue(template.templateText() != null ? template.templateText() : "");
-            
+
             // Set voucher code if it exists in the template
             if (template.voucherCode() != null) {
                 voucherCodeField.setValue(template.voucherCode());
             }
-            
+
             // Set valid until date if it exists in the template
             if (template.validUntil() != null) {
                 validUntilField.setValue(template.validUntil());
@@ -248,12 +248,12 @@ public class PrizeDialog extends Dialog {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        
+
         // Load templates if supplier is set
         if (templatesSupplier != null) {
             templateComboBox.setItems(templatesSupplier.get());
         }
-        
+
         if (prizeTemplateSupplier != null) {
             prizeTemplateComboBox.setItems(prizeTemplateSupplier.get());
         }
@@ -273,12 +273,12 @@ public class PrizeDialog extends Dialog {
     private void save(ClickEvent<Button> buttonClickEvent) {
         // Create a new form record with updated values
         PrizeDialogFormRecord updatedForm = createFormFromFields();
-        
+
         // Pass the form record to the consumer
         this.saveConsumer.accept(updatedForm);
         close();
     }
-    
+
     private PrizeDialogFormRecord createFormFromFields() {
         return new PrizeDialogFormRecord(
             originalForm != null ? originalForm.id() : null,
@@ -287,50 +287,40 @@ public class PrizeDialog extends Dialog {
             templateTextField.getValue(),
             voucherCodeField.getValue(),
             validUntilField.getValue(),
-            winnerField.getValue(),
-            isTemplateMode
+            winnerField.getValue()
         );
     }
 
     public void setPrizeForm(PrizeDialogFormRecord prizeForm) {
         this.originalForm = prizeForm;
-        
+
         // Use readBean instead of setBean for immutable records
         binder.readBean(prizeForm);
-        
-        isTemplateMode = prizeForm != null && prizeForm.isTemplate();
-        
-        if (isTemplateMode) {
-            // If editing a template, don't show the template selection
-            useTemplateCheck.setVisible(false);
-            templateComboBox.setVisible(false);
-            prizeTemplateComboBox.setVisible(false);
-            setHeaderTitle("Edit Prize Template");
-        } else {
+
+
             useTemplateCheck.setVisible(true);
             useTemplateCheck.setValue(false);
             setHeaderTitle("Edit Prize");
-        }
     }
-    
+
     public void setTemplateSupplier(Supplier<List<PrizeRecord>> supplier) {
         this.templatesSupplier = supplier;
     }
-    
+
     public void setPrizeTemplateSupplier(Supplier<List<PrizeTemplateRecord>> supplier) {
         this.prizeTemplateSupplier = supplier;
     }
-    
+
     public void setTemplateMode(boolean isTemplate) {
         this.isTemplateMode = isTemplate;
-        
+
         if (isTemplate) {
             setHeaderTitle("Create Prize Template");
             useTemplateCheck.setVisible(false);
             templateComboBox.setVisible(false);
             prizeTemplateComboBox.setVisible(false);
             templateTextField.setEnabled(true);
-            
+
             // Create an empty template form if one doesn't exist
             if (this.originalForm == null) {
                 this.originalForm = PrizeDialogFormRecord.emptyTemplate();
@@ -339,7 +329,7 @@ public class PrizeDialog extends Dialog {
         } else {
             setHeaderTitle("Create Prize");
             useTemplateCheck.setVisible(true);
-            
+
             // Create an empty prize form if one doesn't exist
             if (this.originalForm == null) {
                 this.originalForm = PrizeDialogFormRecord.emptyPrize();

@@ -21,7 +21,7 @@ class PrizeRecordTest {
         // When
         String voucherCode = "ABC123";
         LocalDate validUntil = LocalDate.now().plusMonths(3);
-        PrizeRecord prizeRecord = new PrizeRecord(id, name, "Prize description", "Template text", false, winner, raffle, voucherCode, validUntil);
+        PrizeRecord prizeRecord = new PrizeRecord(id, name, "Prize description", "Template text", winner, raffle, voucherCode, validUntil);
 
         // Then
         assertEquals(id, prizeRecord.id());
@@ -51,7 +51,7 @@ class PrizeRecordTest {
     @Test
     void testWithWinner() {
         // Given
-        PrizeRecord prizeRecord = new PrizeRecord(1L, "Test Prize", "Description", null, false, null, createSampleRaffle(), "XYZ456", LocalDate.now().plusMonths(6));
+        PrizeRecord prizeRecord = new PrizeRecord(1L, "Test Prize", "Description", null, null, createSampleRaffle(), "XYZ456", LocalDate.now().plusMonths(6));
         ParticipantRecord winner = createSampleParticipant();
 
         // When
@@ -59,7 +59,7 @@ class PrizeRecordTest {
 
         // Then
         assertEquals(winner, updatedPrize.winner());
-        
+
         // Other properties should remain the same
         assertEquals(prizeRecord.id(), updatedPrize.id());
         assertEquals(prizeRecord.name(), updatedPrize.name());

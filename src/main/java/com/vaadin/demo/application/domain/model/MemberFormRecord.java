@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.domain.model;
 
-import com.vaadin.demo.application.data.Member;
+import com.vaadin.demo.application.adapter.persistence.data.Member;
 
 import java.time.OffsetDateTime;
 
@@ -20,7 +20,7 @@ public record MemberFormRecord(
      */
     public static MemberFormRecord fromMember(Member member) {
         if (member == null) return null;
-        
+
         return new MemberFormRecord(
             member.getId(),
             member.getMeetupId(),
@@ -29,60 +29,61 @@ public record MemberFormRecord(
             member.getLastUpdated()
         );
     }
-    
+
     /**
      * Convert to a Member JPA entity
      * Note: This doesn't handle the participations collection
+     * @param memberFormRecord
      */
-    public Member toMember() {
+    public static Member toMember(MemberFormRecord memberFormRecord) {
         Member member = new Member();
-        member.setId(this.id);
-        member.setMeetupId(this.meetupId);
-        member.setName(this.name);
-        member.setEmail(this.email);
-        member.setLastUpdated(this.lastUpdated != null ? this.lastUpdated : OffsetDateTime.now());
+        member.setId(memberFormRecord.id);
+        member.setMeetupId(memberFormRecord.meetupId);
+        member.setName(memberFormRecord.name);
+        member.setEmail(memberFormRecord.email);
+        member.setLastUpdated(memberFormRecord.lastUpdated != null ? memberFormRecord.lastUpdated : OffsetDateTime.now());
         return member;
     }
-    
+
     /**
      * Update an existing Member entity with values from this form
      */
-    public Member updateMember(Member existingMember) {
-        existingMember.setMeetupId(this.meetupId);
-        existingMember.setName(this.name);
-        existingMember.setEmail(this.email);
+    public static Member updateMember(MemberFormRecord memberFormRecord, Member existingMember) {
+        existingMember.setMeetupId(memberFormRecord.meetupId);
+        existingMember.setName(memberFormRecord.name);
+        existingMember.setEmail(memberFormRecord.email);
         existingMember.setLastUpdated(OffsetDateTime.now());
         return existingMember;
     }
-    
+
     /**
      * Create a simple form record with minimal details
      */
     public static MemberFormRecord simple(Long id, String name) {
         return new MemberFormRecord(id, null, name, null, null);
     }
-    
+
     /**
      * Create an empty form record
      */
     public static MemberFormRecord empty() {
         return new MemberFormRecord(null, "", "", "", OffsetDateTime.now());
     }
-    
+
     /**
      * Create a new form with updated meetupId
      */
     public MemberFormRecord withMeetupId(String meetupId) {
         return new MemberFormRecord(this.id, meetupId, this.name, this.email, this.lastUpdated);
     }
-    
+
     /**
      * Create a new form with updated name
      */
     public MemberFormRecord withName(String name) {
         return new MemberFormRecord(this.id, this.meetupId, name, this.email, this.lastUpdated);
     }
-    
+
     /**
      * Create a new form with updated email
      */

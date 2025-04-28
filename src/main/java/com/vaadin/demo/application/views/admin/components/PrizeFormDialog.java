@@ -43,7 +43,6 @@ public class PrizeFormDialog extends Dialog {
   private final TextField voucherCodeField;
   private final DatePicker validUntilField;
   private final Checkbox useTemplateCheck;
-  private final ComboBox<PrizeRecord> templateComboBox;
   private final ComboBox<PrizeTemplateRecord> prizeTemplateComboBox;
   private final Div basicInfoTab;
   private final Div templateTab;
@@ -78,12 +77,6 @@ public class PrizeFormDialog extends Dialog {
     validUntilField.setWidthFull();
     validUntilField.setHelperText("Optional date until when the prize is valid");
 
-    templateComboBox = new ComboBox<>("Select Legacy Template");
-    templateComboBox.setVisible(false);
-    templateComboBox.setEnabled(false);
-    templateComboBox.setWidthFull();
-    templateComboBox.setItemLabelGenerator(PrizeRecord::name);
-
     prizeTemplateComboBox = new ComboBox<>("Select Template");
     prizeTemplateComboBox.setVisible(false);
     prizeTemplateComboBox.setEnabled(false);
@@ -101,9 +94,6 @@ public class PrizeFormDialog extends Dialog {
       boolean useTemplate = e.getValue();
       boolean usePrizeTemplate = prizeTemplateSupplier != null;
 
-      // Show either the legacy template or new prize template combo box
-      templateComboBox.setVisible(useTemplate && !usePrizeTemplate);
-      templateComboBox.setEnabled(useTemplate && !usePrizeTemplate);
 
       prizeTemplateComboBox.setVisible(useTemplate && usePrizeTemplate);
       prizeTemplateComboBox.setEnabled(useTemplate && usePrizeTemplate);
@@ -114,15 +104,7 @@ public class PrizeFormDialog extends Dialog {
       if (useTemplate) {
         if (usePrizeTemplate && prizeTemplateComboBox.getValue() != null) {
           updateTemplateDisplay(prizeTemplateComboBox.getValue());
-        } else if (templateComboBox.getValue() != null) {
-          updateTemplateDisplay(templateComboBox.getValue());
         }
-      }
-    });
-
-    templateComboBox.addValueChangeListener(e -> {
-      if (e.getValue() != null) {
-        updateTemplateDisplay(e.getValue());
       }
     });
 
@@ -146,7 +128,6 @@ public class PrizeFormDialog extends Dialog {
     templateTab = new Div();
     templateTab.add(new VerticalLayout(
         useTemplateCheck,
-        templateComboBox,
         prizeTemplateComboBox,
         new H4("Template Text"),
         templateTextField
@@ -251,10 +232,6 @@ public class PrizeFormDialog extends Dialog {
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    // Load templates if supplier is set
-    if (templatesSupplier != null) {
-      templateComboBox.setItems(templatesSupplier.get());
-    }
 
     if (prizeTemplateSupplier != null) {
       prizeTemplateComboBox.setItems(prizeTemplateSupplier.get());

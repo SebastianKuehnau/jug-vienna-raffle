@@ -1,8 +1,8 @@
 package com.vaadin.demo.application.views.admin.components;
 
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.MeetupService;
 import com.vaadin.demo.application.domain.model.EventRecord;
-import com.vaadin.demo.application.services.meetup.MeetupClient;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -18,19 +18,20 @@ import com.vaadin.flow.component.progressbar.ProgressBar;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Dialog for importing Meetup events from the Meetup.com API
+ * Using proper hexagonal architecture with application services
  */
 @Slf4j
 public class MeetupImportDialog extends Dialog {
 
-    private final MeetupClient meetupApiClient;
-    private final MeetupApplicationService meetupService;
+    private final MeetupService meetupService;
+    private final MeetupApplicationService meetupApplicationService;
     private final Runnable onImportComplete;
 
-    private final Grid<MeetupClient.MeetupEvent> meetupGrid = new Grid<>();
+    private final Grid<EventRecord> meetupGrid = new Grid<>();
     private final ProgressBar progressBar = new ProgressBar();
     private final Button importButton = new Button("Import Selected");
     private final Paragraph statusText = new Paragraph("Select events to import");
@@ -38,15 +39,15 @@ public class MeetupImportDialog extends Dialog {
     /**
      * Create a new Meetup import dialog
      *
-     * @param meetupApiClient External API client to fetch Meetup data
-     * @param meetupService Domain service to store Meetup data locally
+     * @param meetupService The service for fetching external meetup data
+     * @param meetupApplicationService The application service for handling domain operations
      * @param onImportComplete Callback to run when import is complete
      */
-    public MeetupImportDialog(MeetupClient meetupApiClient,
-                             MeetupApplicationService meetupService,
+    public MeetupImportDialog(MeetupService meetupService,
+                             MeetupApplicationService meetupApplicationService,
                              Runnable onImportComplete) {
-        this.meetupApiClient = meetupApiClient;
         this.meetupService = meetupService;
+        this.meetupApplicationService = meetupApplicationService;
         this.onImportComplete = onImportComplete;
 
         setHeaderTitle("Import Meetup Events");
@@ -73,24 +74,23 @@ public class MeetupImportDialog extends Dialog {
     }
 
     private void configureGrid() {
-        meetupGrid.addColumn(MeetupClient.MeetupEvent::id).setHeader("ID").setWidth("100px");
-        meetupGrid.addColumn(MeetupClient.MeetupEvent::title).setHeader("Title").setAutoWidth(true).setFlexGrow(1);
+        meetupGrid.addColumn(EventRecord::meetupId).setHeader("ID").setWidth("100px");
+        meetupGrid.addColumn(EventRecord::title).setHeader("Title").setAutoWidth(true).setFlexGrow(1);
         meetupGrid.addColumn(e -> {
-            if (e.dateTime() != null) {
-                return e.dateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            if (e.eventDate() != null) {
+                return e.eventDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             } else {
                 return "N/A";
             }
         }).setHeader("Date").setWidth("150px");
-        meetupGrid.addColumn(MeetupClient.MeetupEvent::status).setHeader("Status").setWidth("100px");
-
+        
         // Add a column to show if the event is already imported
         meetupGrid.addComponentColumn(event -> {
-            boolean exists = meetupService.getEventByMeetupId(event.id()).isPresent();
+            boolean exists = meetupApplicationService.getEventByMeetupId(event.meetupId()).isPresent();
             if (exists) {
                 Button updateButton = new Button("Update");
                 updateButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-                updateButton.addClickListener(e -> importEvent(event));
+                updateButton.addClickListener(e -> importEvent(event.meetupId()));
                 return updateButton;
             } else {
                 return new Paragraph("New");
@@ -103,7 +103,7 @@ public class MeetupImportDialog extends Dialog {
 
     private void loadMeetupEvents() {
         try {
-            Set<MeetupClient.MeetupEvent> events = meetupApiClient.getEvents();
+            List<EventRecord> events = meetupService.getExternalEvents();
             meetupGrid.setItems(events);
             statusText.setText("Found " + events.size() + " events. Select events to import.");
         } catch (Exception e) {
@@ -134,7 +134,7 @@ public class MeetupImportDialog extends Dialog {
     }
 
     private void importSelectedEvents() {
-        Set<MeetupClient.MeetupEvent> selectedEvents = meetupGrid.getSelectedItems();
+        var selectedEvents = meetupGrid.getSelectedItems();
         if (selectedEvents.isEmpty()) {
             Notification.show("No events selected", 3000, Notification.Position.MIDDLE);
             return;
@@ -152,7 +152,7 @@ public class MeetupImportDialog extends Dialog {
             counter[0] = 0;
 
             // Process each event one by one
-            for (MeetupClient.MeetupEvent event : selectedEvents) {
+            for (EventRecord event : selectedEvents) {
                 try {
                     counter[0]++;
                     final int currentCount = counter[0];
@@ -162,10 +162,10 @@ public class MeetupImportDialog extends Dialog {
                     statusText.setText("Importing " + currentCount + " of " + total + ": " + event.title());
 
                     // Import the event - this preserves the security context
-                    importEvent(event);
+                    importEvent(event.meetupId());
                 } catch (Exception ex) {
-                    log.error("Error importing event: " + event.id(), ex);
-                    Notification.show("Error importing event " + event.id() + ": " + ex.getMessage(),
+                    log.error("Error importing event: " + event.meetupId(), ex);
+                    Notification.show("Error importing event " + event.meetupId() + ": " + ex.getMessage(),
                             5000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
                 }
@@ -195,7 +195,7 @@ public class MeetupImportDialog extends Dialog {
         }));
     }
 
-    private EventRecord importEvent(MeetupClient.MeetupEvent event) {
-        return meetupService.importEvent(event.id());
+    private EventRecord importEvent(String meetupEventId) {
+        return meetupApplicationService.importEvent(meetupEventId);
     }
 }

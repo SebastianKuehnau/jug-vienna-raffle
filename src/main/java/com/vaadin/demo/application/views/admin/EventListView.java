@@ -3,8 +3,8 @@ package com.vaadin.demo.application.views.admin;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.MeetupService;
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
-import com.vaadin.demo.application.services.meetup.MeetupClient;
 import com.vaadin.demo.application.views.MainLayout;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
@@ -40,20 +40,20 @@ import java.util.Optional;
 @SuppressWarnings("serial")
 public class EventListView extends VerticalLayout {
 
-    private final MeetupApplicationService meetupService;
+    private final MeetupApplicationService meetupApplicationService;
     private final RaffleApplicationService raffleService;
-    private final MeetupClient meetupApiClient;
+    private final MeetupService meetupService;
 
     private final Grid<EventRecord> eventGrid = new Grid<>();
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public EventListView(MeetupApplicationService meetupService,
+    public EventListView(MeetupApplicationService meetupApplicationService,
                         RaffleApplicationService raffleService,
-                        MeetupClient meetupApiClient) {
-        this.meetupService = meetupService;
+                        MeetupService meetupService) {
+        this.meetupApplicationService = meetupApplicationService;
         this.raffleService = raffleService;
-        this.meetupApiClient = meetupApiClient;
+        this.meetupService = meetupService;
 
         setSizeFull();
         setPadding(true);
@@ -103,7 +103,7 @@ public class EventListView extends VerticalLayout {
             HorizontalLayout buttonLayout = new HorizontalLayout();
 
             // Sync Members button
-            SyncMembersButton syncButton = new SyncMembersButton(meetupService, event.meetupId());
+            SyncMembersButton syncButton = new SyncMembersButton(meetupApplicationService, event.meetupId());
             buttonLayout.add(syncButton);
 
             // Raffle button
@@ -130,14 +130,14 @@ public class EventListView extends VerticalLayout {
     }
 
     private void refreshEvents() {
-        List<EventRecord> events = meetupService.getAllEvents();
+        List<EventRecord> events = meetupApplicationService.getAllEvents();
         eventGrid.setItems(events);
     }
 
     private void importMeetupButtonClicked(ClickEvent<Button> event) {
         MeetupImportDialog importDialog = new MeetupImportDialog(
-                meetupApiClient,
                 meetupService,
+                meetupApplicationService,
                 this::refreshEvents
         );
         importDialog.open();

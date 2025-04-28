@@ -1,6 +1,7 @@
 package com.vaadin.demo.application.domain.model;
 
-import com.vaadin.demo.application.data.Participant;
+import com.vaadin.demo.application.adapter.Mapper;
+import com.vaadin.demo.application.adapter.persistence.data.Participant;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -47,7 +48,7 @@ class ParticipantRecordTest {
 
         // Then
         assertEquals(newStatus, updatedParticipant.attendanceStatus());
-        
+
         // Other properties should remain the same
         assertEquals(participant.id(), updatedParticipant.id());
         assertEquals(participant.member(), updatedParticipant.member());
@@ -69,7 +70,7 @@ class ParticipantRecordTest {
 
         // Then
         assertTrue(updatedParticipant.hasEnteredRaffle(), "Updated participant should have hasEnteredRaffle = true");
-        
+
         // Other properties should remain the same
         assertEquals(participant.id(), updatedParticipant.id());
         assertEquals(participant.member(), updatedParticipant.member());
@@ -83,43 +84,43 @@ class ParticipantRecordTest {
     @Test
     void testStatusConversion() {
         // Test JPA to domain model conversion
-        assertEquals(ParticipantRecord.AttendanceStatus.ATTENDED, 
-                ParticipantRecord.fromJpaAttendanceStatus(Participant.AttendanceStatus.ATTENDED));
-        assertEquals(ParticipantRecord.AttendanceStatus.NO_SHOW, 
-                ParticipantRecord.fromJpaAttendanceStatus(Participant.AttendanceStatus.NO_SHOW));
-        assertEquals(ParticipantRecord.AttendanceStatus.UNKNOWN, 
-                ParticipantRecord.fromJpaAttendanceStatus(Participant.AttendanceStatus.UNKNOWN));
-        assertEquals(ParticipantRecord.AttendanceStatus.UNKNOWN, 
-                ParticipantRecord.fromJpaAttendanceStatus(null));
+        assertEquals(ParticipantRecord.AttendanceStatus.ATTENDED,
+                Mapper.fromJpaAttendanceStatus(Participant.AttendanceStatus.ATTENDED));
+        assertEquals(ParticipantRecord.AttendanceStatus.NO_SHOW,
+                Mapper.fromJpaAttendanceStatus(Participant.AttendanceStatus.NO_SHOW));
+        assertEquals(ParticipantRecord.AttendanceStatus.UNKNOWN,
+                Mapper.fromJpaAttendanceStatus(Participant.AttendanceStatus.UNKNOWN));
+        assertEquals(ParticipantRecord.AttendanceStatus.UNKNOWN,
+                Mapper.fromJpaAttendanceStatus(null));
 
         // Test domain model to JPA conversion
-        assertEquals(Participant.AttendanceStatus.ATTENDED, 
-                ParticipantRecord.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.ATTENDED));
-        assertEquals(Participant.AttendanceStatus.NO_SHOW, 
-                ParticipantRecord.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.NO_SHOW));
-        assertEquals(Participant.AttendanceStatus.UNKNOWN, 
-                ParticipantRecord.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.UNKNOWN));
-        assertEquals(Participant.AttendanceStatus.UNKNOWN, 
-                ParticipantRecord.toJpaAttendanceStatus(null));
+        assertEquals(Participant.AttendanceStatus.ATTENDED,
+                Mapper.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.ATTENDED));
+        assertEquals(Participant.AttendanceStatus.NO_SHOW,
+                Mapper.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.NO_SHOW));
+        assertEquals(Participant.AttendanceStatus.UNKNOWN,
+                Mapper.toJpaAttendanceStatus(ParticipantRecord.AttendanceStatus.UNKNOWN));
+        assertEquals(Participant.AttendanceStatus.UNKNOWN,
+                Mapper.toJpaAttendanceStatus(null));
     }
 
     @Test
     void testRsvpStatusConversion() {
         // Test JPA to domain model conversion
-        assertEquals(ParticipantRecord.RsvpStatus.YES, 
-                ParticipantRecord.fromJpaRsvpStatus(Participant.RSVPStatus.YES));
-        assertEquals(ParticipantRecord.RsvpStatus.NO, 
-                ParticipantRecord.fromJpaRsvpStatus(Participant.RSVPStatus.NO));
-        assertEquals(ParticipantRecord.RsvpStatus.NO, 
-                ParticipantRecord.fromJpaRsvpStatus(null));
+        assertEquals(ParticipantRecord.RsvpStatus.YES,
+                Mapper.fromJpaRsvpStatus(Participant.RSVPStatus.YES));
+        assertEquals(ParticipantRecord.RsvpStatus.NO,
+                Mapper.fromJpaRsvpStatus(Participant.RSVPStatus.NO));
+        assertEquals(ParticipantRecord.RsvpStatus.NO,
+                Mapper.fromJpaRsvpStatus(null));
 
         // Test domain model to JPA conversion
-        assertEquals(Participant.RSVPStatus.YES, 
-                ParticipantRecord.toJpaRsvpStatus(ParticipantRecord.RsvpStatus.YES));
-        assertEquals(Participant.RSVPStatus.NO, 
-                ParticipantRecord.toJpaRsvpStatus(ParticipantRecord.RsvpStatus.NO));
-        assertEquals(Participant.RSVPStatus.NO, 
-                ParticipantRecord.toJpaRsvpStatus(null));
+        assertEquals(Participant.RSVPStatus.YES,
+                Mapper.toJpaRsvpStatus(ParticipantRecord.RsvpStatus.YES));
+        assertEquals(Participant.RSVPStatus.NO,
+                Mapper.toJpaRsvpStatus(ParticipantRecord.RsvpStatus.NO));
+        assertEquals(Participant.RSVPStatus.NO,
+                Mapper.toJpaRsvpStatus(null));
     }
 
     private ParticipantRecord createSampleParticipant() {

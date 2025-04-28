@@ -63,7 +63,6 @@ public record PrizeFormRecord(
         this.name,
         this.description,
         this.templateText,
-        false, // Not a template
         null, // No winner - winner is managed separately
         raffle,
         this.voucherCode,

@@ -1,21 +1,19 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.domain.model.Mapper;
-
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Member;
-import com.vaadin.demo.application.data.Participant;
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.persistence.data.Member;
+import com.vaadin.demo.application.adapter.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.persistence.data.Prize;
+import com.vaadin.demo.application.adapter.persistence.data.Raffle;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
 import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.repository.MeetupEventRepository;
-import com.vaadin.demo.application.repository.PrizeRepository;
-import com.vaadin.demo.application.repository.PrizeTemplateRepository;
-import com.vaadin.demo.application.repository.RaffleRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.MeetupEventRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.PrizeRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.PrizeTemplateRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.RaffleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +37,7 @@ class RaffleServiceAdapterTest {
 
     @Mock
     private PrizeRepository prizeRepository;
-    
+
     @Mock
     private PrizeTemplateRepository prizeTemplateRepository;
 
@@ -69,7 +67,7 @@ class RaffleServiceAdapterTest {
                 meetupEventRepository,
                 meetupPort
         );
-        
+
         // Create test data
         testEvent = new MeetupEvent();
         testEvent.setId(1L);
@@ -79,18 +77,18 @@ class RaffleServiceAdapterTest {
         testEvent.setDateTime(OffsetDateTime.now());
         testEvent.setEventUrl("http://test.url");
         testEvent.setStatus("active");
-        
+
         testRaffle = new Raffle();
         testRaffle.setId(1L);
         testRaffle.setEvent(testEvent);
         testRaffle.setMeetup_event_id(testEvent.getMeetupId());
-        
+
         testMember = new Member();
         testMember.setId(1L);
         testMember.setMeetupId("member123");
         testMember.setName("John Doe");
         testMember.setEmail("john@example.com");
-        
+
         testParticipant = new Participant();
         testParticipant.setId(1L);
         testParticipant.setMeetupEvent(testEvent);
@@ -100,15 +98,15 @@ class RaffleServiceAdapterTest {
         testParticipant.setAttendanceStatus(Participant.AttendanceStatus.UNKNOWN);
         testParticipant.setIsOrganizer(false);
         testParticipant.setHasEnteredRaffle(false);
-        
+
         testPrize = new Prize();
         testPrize.setId(1L);
         testPrize.setName("Test Prize");
         testPrize.setRaffle(testRaffle);
         testPrize.setWinner(null);
-        
+
         testRaffle.setPrizes(Set.of(testPrize));
-        
+
         testEventRecord = Mapper.toEventRecord(testEvent);
         testPrizeRecord = Mapper.toPrizeRecord(testPrize);
         testParticipantRecord = Mapper.toParticipantRecord(testParticipant);
@@ -234,13 +232,13 @@ class RaffleServiceAdapterTest {
         when(prizeRepository.findById(testPrizeRecord.id())).thenReturn(Optional.of(testPrize));
         when(meetupPort.markParticipantAttendedAndEnteredRaffle(testParticipantRecord.id()))
                 .thenReturn(testParticipantRecord);
-        
+
         Prize updatedPrize = new Prize();
         updatedPrize.setId(testPrize.getId());
         updatedPrize.setName(testPrize.getName());
         updatedPrize.setRaffle(testPrize.getRaffle());
         updatedPrize.setWinner(testParticipant);
-        
+
         when(prizeRepository.save(any(Prize.class))).thenReturn(updatedPrize);
 
         // When

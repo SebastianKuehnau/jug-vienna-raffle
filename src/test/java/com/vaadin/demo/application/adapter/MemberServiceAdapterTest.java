@@ -1,8 +1,8 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.data.Member;
+import com.vaadin.demo.application.adapter.persistence.data.Member;
 import com.vaadin.demo.application.domain.model.MemberRecord;
-import com.vaadin.demo.application.repository.MemberRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

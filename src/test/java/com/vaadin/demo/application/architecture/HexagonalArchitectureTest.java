@@ -21,8 +21,8 @@ public class HexagonalArchitectureTest {
     private static final String DOMAIN_PORT_PACKAGE = "com.vaadin.demo.application.domain.port..";
     private static final String APPLICATION_PACKAGE = "com.vaadin.demo.application.application..";
     private static final String ADAPTER_PACKAGE = "com.vaadin.demo.application.adapter..";
-    private static final String REPOSITORY_PACKAGE = "com.vaadin.demo.application.repository..";
-    private static final String DATA_PACKAGE = "com.vaadin.demo.application.data..";
+    private static final String REPOSITORY_PACKAGE = "com.vaadin.demo.application.adapter.persistence.repository..";
+    private static final String DATA_PACKAGE = "com.vaadin.demo.application.adapter.persistence.data..";
     private static final String VIEW_PACKAGE = "com.vaadin.demo.application.views..";
     
     // Define layer names for layered architecture

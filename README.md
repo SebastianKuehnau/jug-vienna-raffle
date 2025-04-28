@@ -152,7 +152,7 @@ docker run -p 8080:8080 --link postgres:postgres -e SPRING_DATASOURCE_URL=jdbc:p
 - `src/main/resources/db/migration/`
   - `V1__initial_schema.sql`: Base database schema
   - `V2__create_meetup_tables.sql`: Meetup integration tables
-  - `V6__add_prize_templates.sql`: Prize template support
+  - `V2__add_prize_templates.sql`: Prize template support
 
 ## Configuration
 

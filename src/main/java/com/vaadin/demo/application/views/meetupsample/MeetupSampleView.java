@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.views.meetupsample;
 
-import com.vaadin.demo.application.services.meetup.MeetupClient;
+import com.vaadin.demo.application.adapter  .meetupclient.MeetupClient;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;

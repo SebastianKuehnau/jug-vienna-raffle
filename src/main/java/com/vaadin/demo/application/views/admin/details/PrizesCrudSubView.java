@@ -110,7 +110,7 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
 
         var prizeDialog = new PrizeFormDialog(this::savePrizeForm, this::deletePrize);
         prizeDialog.setPrizeForm(emptyForm);
-        prizeDialog.setTemplateSupplier(() -> raffleService.getAllPrizeTemplates());
+//        prizeDialog.setTemplateSupplier(() -> raffleService.getAllPrizeTemplates());
         prizeDialog.open();
     }
 
@@ -120,17 +120,15 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
 
         // Try to get PrizeTemplateRecords first, if that list is empty, fall back to legacy templates
         List<PrizeTemplateRecord> prizeTemplates = raffleService.getAllPrizeTemplateRecords();
-        List<PrizeRecord> legacyTemplates = raffleService.getAllPrizeTemplates();
 
-        if (prizeTemplates.isEmpty() && legacyTemplates.isEmpty()) {
+        if (prizeTemplates.isEmpty() ) {
             dialog.add(new Span("No templates available. Please create a template first."));
             dialog.add(new Button("Close", e -> dialog.close()));
             dialog.open();
             return;
         }
 
-        // Choose which template selector to show
-        if (!prizeTemplates.isEmpty()) {
+
             // We have new templates, use them
             ComboBox<PrizeTemplateRecord> templateCombo = new ComboBox<>("Select Template");
             templateCombo.setItems(prizeTemplates);
@@ -189,48 +187,7 @@ public class PrizesCrudSubView extends VerticalLayout implements BeforeEnterObse
                 buttons
             );
             dialog.add(layout);
-        } else {
-            // Fall back to legacy template
-            ComboBox<PrizeRecord> templateCombo = new ComboBox<>("Select Legacy Template");
-            templateCombo.setItems(legacyTemplates);
-            templateCombo.setItemLabelGenerator(PrizeRecord::name);
-            templateCombo.setWidthFull();
 
-            TextField voucherField = new TextField("Voucher Code (optional)");
-            voucherField.setWidthFull();
-            voucherField.setHelperText("If this prize requires a voucher code, enter it here");
-
-            Button cancelButton = new Button("Cancel", e -> dialog.close());
-            Button createButton = new Button("Create Prize", e -> {
-                PrizeRecord template = templateCombo.getValue();
-                if (template != null) {
-                    String voucherCode = voucherField.getValue();
-                    PrizeRecord newPrize = raffleService.createPrizeFromTemplate(
-                        template.id(),
-                        this.raffle,
-                        voucherCode
-                    );
-                    refreshPrizes();
-                    dialog.close();
-                }
-            });
-            createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-            createButton.setEnabled(false);
-
-            templateCombo.addValueChangeListener(e -> createButton.setEnabled(e.getValue() != null));
-
-            HorizontalLayout buttons = new HorizontalLayout(cancelButton, createButton);
-            buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-            buttons.setWidthFull();
-
-            VerticalLayout layout = new VerticalLayout(
-                new H3("Use an existing template to create a prize"),
-                templateCombo,
-                voucherField,
-                buttons
-            );
-            dialog.add(layout);
-        }
 
         dialog.setWidth("500px");
         dialog.open();

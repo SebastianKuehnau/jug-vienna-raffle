@@ -13,8 +13,7 @@ public record PrizeDialogFormRecord(
     String templateText,
     String voucherCode,
     LocalDate validUntil,
-    String winnerName,
-    boolean isTemplate
+    String winnerName
 ) {
     /**
      * Create a new PrizeDialogFormRecord from a PrizeRecord
@@ -36,8 +35,7 @@ public record PrizeDialogFormRecord(
             prizeRecord.templateText(),
             prizeRecord.voucherCode(),
             prizeRecord.validUntil(),
-            winnerName,
-            prizeRecord.isTemplate()
+            winnerName
         );
     }
 
@@ -56,8 +54,7 @@ public record PrizeDialogFormRecord(
             template.templateText(),
             template.voucherCode(),
             template.validUntil(),
-            null,
-            true
+            null
         );
     }
 
@@ -65,21 +62,21 @@ public record PrizeDialogFormRecord(
      * Create a simple form record with minimal details
      */
     public static PrizeDialogFormRecord simple(Long id, String name) {
-        return new PrizeDialogFormRecord(id, name, null, null, null, null, null, false);
+        return new PrizeDialogFormRecord(id, name, null, null, null, null, null);
     }
 
     /**
      * Create an empty form record for a prize
      */
     public static PrizeDialogFormRecord emptyPrize() {
-        return new PrizeDialogFormRecord(null, "", "", "", null, null, null, false);
+        return new PrizeDialogFormRecord(null, "", "", "", null, null, null);
     }
 
     /**
      * Create an empty form record for a template
      */
     public static PrizeDialogFormRecord emptyTemplate() {
-        return new PrizeDialogFormRecord(null, "", "", "", null, null, null, true);
+        return new PrizeDialogFormRecord(null, "", "", "", null, null, null);
     }
 
     /**
@@ -91,9 +88,8 @@ public record PrizeDialogFormRecord(
             this.name,
             this.description,
             this.templateText,
-            this.isTemplate,
             null, // No winner - winner is managed separately
-            this.isTemplate ? null : raffle, // Templates don't have raffles
+            raffle,
             this.voucherCode,
             this.validUntil
         );
@@ -103,10 +99,7 @@ public record PrizeDialogFormRecord(
      * Convert to a PrizeTemplateRecord
      */
     public PrizeTemplateRecord toPrizeTemplateRecord() {
-        if (!this.isTemplate) {
-            throw new IllegalStateException("Cannot convert a prize to a template record");
-        }
-        
+
         return new PrizeTemplateRecord(
             this.id,
             this.name,
@@ -122,7 +115,7 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withName(String name) {
         return new PrizeDialogFormRecord(this.id, name, this.description, this.templateText,
-            this.voucherCode, this.validUntil, this.winnerName, this.isTemplate);
+            this.voucherCode, this.validUntil, this.winnerName);
     }
 
     /**
@@ -130,7 +123,7 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withDescription(String description) {
         return new PrizeDialogFormRecord(this.id, this.name, description, this.templateText,
-            this.voucherCode, this.validUntil, this.winnerName, this.isTemplate);
+            this.voucherCode, this.validUntil, this.winnerName);
     }
 
     /**
@@ -138,7 +131,7 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withTemplateText(String templateText) {
         return new PrizeDialogFormRecord(this.id, this.name, this.description, templateText,
-            this.voucherCode, this.validUntil, this.winnerName, this.isTemplate);
+            this.voucherCode, this.validUntil, this.winnerName);
     }
 
     /**
@@ -146,7 +139,7 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withVoucherCode(String voucherCode) {
         return new PrizeDialogFormRecord(this.id, this.name, this.description, this.templateText,
-            voucherCode, this.validUntil, this.winnerName, this.isTemplate);
+            voucherCode, this.validUntil, this.winnerName);
     }
 
     /**
@@ -154,7 +147,7 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withValidUntil(LocalDate validUntil) {
         return new PrizeDialogFormRecord(this.id, this.name, this.description, this.templateText,
-            this.voucherCode, validUntil, this.winnerName, this.isTemplate);
+            this.voucherCode, validUntil, this.winnerName);
     }
 
     /**
@@ -162,14 +155,6 @@ public record PrizeDialogFormRecord(
      */
     public PrizeDialogFormRecord withWinnerName(String winnerName) {
         return new PrizeDialogFormRecord(this.id, this.name, this.description, this.templateText,
-            this.voucherCode, this.validUntil, winnerName, this.isTemplate);
-    }
-    
-    /**
-     * Create a new form with updated template flag
-     */
-    public PrizeDialogFormRecord withTemplateFlag(boolean isTemplate) {
-        return new PrizeDialogFormRecord(this.id, this.name, this.description, this.templateText,
-            this.voucherCode, this.validUntil, this.winnerName, isTemplate);
+            this.voucherCode, this.validUntil, winnerName);
     }
 }

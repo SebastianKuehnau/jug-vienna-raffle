@@ -1,9 +1,10 @@
 package com.vaadin.demo.application.views.admin;
 
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
+import com.vaadin.demo.application.application.service.MeetupService;
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
+import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
-import com.vaadin.demo.application.services.meetup.MeetupClient;
 import com.vaadin.demo.application.views.admin.components.IconButton;
 import com.vaadin.demo.application.views.admin.components.MeetupImportDialog;
 import com.vaadin.flow.component.AbstractField;
@@ -32,6 +33,7 @@ import java.util.List;
 
 /**
  * Raffle Admin View using domain records instead of JPA entities
+ * Now updated to use proper hexagonal architecture
  */
 @Menu(order = 5, icon = LineAwesomeIconUrl.TOOLS_SOLID, title = "Raffle Admin")
 @AnonymousAllowed
@@ -41,16 +43,16 @@ import java.util.List;
 public class RaffleAdminView extends VerticalLayout {
 
     private final RaffleApplicationService raffleService;
-    private final MeetupClient meetupClient;
+    private final MeetupService meetupService;
     private final Grid<RaffleRecord> raffleGrid;
     private final MeetupApplicationService meetupApplicationService;
 
     public RaffleAdminView(
             RaffleApplicationService raffleService,
-            MeetupClient meetupClient,
+            MeetupService meetupService,
             MeetupApplicationService meetupApplicationService) {
         this.raffleService = raffleService;
-        this.meetupClient = meetupClient;
+        this.meetupService = meetupService;
         this.meetupApplicationService = meetupApplicationService;
 
         add(new H1("Raffle Administration"));
@@ -68,7 +70,9 @@ public class RaffleAdminView extends VerticalLayout {
                 return raffle.event().title();
             } else {
                 try {
-                    return meetupClient.getEvent(raffle.meetupId()).get().title();
+                    return meetupService.getExternalEvent(raffle.meetupId())
+                            .map(EventRecord::title)
+                            .orElse("Unknown Event");
                 } catch (Exception e) {
                     return "Unknown Event";
                 }
@@ -130,13 +134,16 @@ public class RaffleAdminView extends VerticalLayout {
                 .map(RaffleRecord::meetupId)
                 .toList();
 
+        // Get external events using MeetupService
+        List<EventRecord> externalEvents = meetupService.getExternalEvents();
+
         // Create select for meetup event
-        var meetupEventIdSelect = new Select<MeetupClient.MeetupEvent>();
+        var meetupEventIdSelect = new Select<EventRecord>();
         meetupEventIdSelect.setLabel("Meetup Event ID");
-        meetupEventIdSelect.setItems(meetupClient.getEvents());
-        meetupEventIdSelect.setItemLabelGenerator(MeetupClient.MeetupEvent::id);
+        meetupEventIdSelect.setItems(externalEvents);
+        meetupEventIdSelect.setItemLabelGenerator(EventRecord::meetupId);
         meetupEventIdSelect.setTextRenderer(this::createTextRenderer);
-        meetupEventIdSelect.setItemEnabledProvider(meetupEvent -> !existingRaffleMeetupIds.contains(meetupEvent.id()));
+        meetupEventIdSelect.setItemEnabledProvider(event -> !existingRaffleMeetupIds.contains(event.meetupId()));
         meetupEventIdSelect.setWidth(300, Unit.PIXELS);
 
         var addButton = new Button("Add Raffle", VaadinIcon.PLUS.create());
@@ -146,7 +153,7 @@ public class RaffleAdminView extends VerticalLayout {
         });
 
         addButton.addClickListener(event -> {
-            String meetupEventId = meetupEventIdSelect.getValue().id();
+            String meetupEventId = meetupEventIdSelect.getValue().meetupId();
 
             // Create new raffle using RaffleApplicationService
             raffleService.createRaffleFromForm(meetupEventId);
@@ -165,9 +172,9 @@ public class RaffleAdminView extends VerticalLayout {
 
     private void importMeetupButtonClicked(ClickEvent<Button> event) {
         MeetupImportDialog importDialog = new MeetupImportDialog(
-            meetupClient,
-                meetupApplicationService,
-                this::refreshGrid
+            meetupService,
+            meetupApplicationService,
+            this::refreshGrid
         );
         importDialog.open();
     }
@@ -177,7 +184,7 @@ public class RaffleAdminView extends VerticalLayout {
         raffleGrid.setItems(raffles);
     }
 
-    private String createTextRenderer(MeetupClient.MeetupEvent meetupEvent) {
-        return String.format("%s (%s)", meetupEvent.id(), meetupEvent.title());
+    private String createTextRenderer(EventRecord event) {
+        return String.format("%s (%s)", event.meetupId(), event.title());
     }
 }

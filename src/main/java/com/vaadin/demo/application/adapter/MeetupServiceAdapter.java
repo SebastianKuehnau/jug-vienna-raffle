@@ -1,15 +1,15 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Member;
-import com.vaadin.demo.application.data.Participant;
+import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.persistence.data.Member;
+import com.vaadin.demo.application.adapter.persistence.data.Participant;
 import com.vaadin.demo.application.domain.model.*;
 import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.repository.MeetupEventRepository;
-import com.vaadin.demo.application.repository.MemberRepository;
-import com.vaadin.demo.application.repository.ParticipantRepository;
-import com.vaadin.demo.application.services.meetup.MeetupClient;
-import com.vaadin.demo.application.services.meetup.MeetupClient.MeetupEventWithRSVPs;
+import com.vaadin.demo.application.adapter.persistence.repository.MeetupEventRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.MemberRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.ParticipantRepository;
+import com.vaadin.demo.application.adapter.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.meetupclient.MeetupClient.MeetupEventWithRSVPs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -101,7 +101,7 @@ public class MeetupServiceAdapter implements MeetupPort {
                 });
 
         // Update the event with data from the API
-        event.updateFromApiResponse(apiEvent);
+        Mapper.updateFromApiResponse(event, apiEvent);
         MeetupEvent savedEvent = meetupEventRepository.save(event);
 
         // Sync members for the event

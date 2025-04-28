@@ -22,7 +22,7 @@ class RaffleApplicationServiceTest {
 
     @Mock
     private RafflePort rafflePort;
-    
+
     @Mock
     private MeetupPort meetupPort;
 
@@ -35,8 +35,8 @@ class RaffleApplicationServiceTest {
 
     @BeforeEach
     void setUp() {
-        raffleApplicationService = new RaffleApplicationService(rafflePort, meetupPort);
-        
+        raffleApplicationService = new RaffleApplicationServiceImpl(rafflePort, meetupPort);
+
         // Create sample test data
         sampleEvent = new EventRecord(
                 1L,
@@ -47,26 +47,25 @@ class RaffleApplicationServiceTest {
                 "Venue",
                 "Link"
         );
-        
+
         sampleRaffle = new RaffleRecord(
                 1L,
                 sampleEvent,
                 sampleEvent.meetupId(),
                 List.of()
         );
-        
+
         samplePrize = new PrizeRecord(
                 1L,
                 "Test Prize",
-                "Prize Description", 
+                "Prize Description",
                 "Prize Template Text",
-                false,
                 null,
                 sampleRaffle,
                 "TEST123",
                 LocalDate.now().plusMonths(3)
         );
-        
+
         MemberRecord sampleMember = new MemberRecord(
                 1L,
                 "member123",
@@ -74,7 +73,7 @@ class RaffleApplicationServiceTest {
                 "john@example.com",
                 OffsetDateTime.now()
         );
-        
+
         sampleParticipant = new ParticipantRecord(
                 1L,
                 sampleMember,
@@ -172,7 +171,7 @@ class RaffleApplicationServiceTest {
         assertEquals(sampleRaffle, result);
         verify(rafflePort).createRaffle(sampleEvent);
     }
-    
+
     @Test
     void getAllRafflesShouldDelegateToPort() {
         // Given
@@ -186,7 +185,7 @@ class RaffleApplicationServiceTest {
         assertEquals(raffles, result);
         verify(rafflePort).getAllRaffles();
     }
-    
+
     @Test
     void createRaffleFromFormShouldDelegateToPort() {
         // Given
@@ -239,7 +238,6 @@ class RaffleApplicationServiceTest {
                 samplePrize.name(),
                 samplePrize.description(),
                 samplePrize.templateText(),
-                samplePrize.isTemplate(),
                 sampleParticipant,
                 samplePrize.raffle(),
                 samplePrize.voucherCode(),

@@ -1,16 +1,14 @@
 package com.vaadin.demo.application.application.service;
 
-import com.vaadin.demo.application.data.MeetupEvent;
-import com.vaadin.demo.application.data.Participant;
-import com.vaadin.demo.application.data.Prize;
-import com.vaadin.demo.application.data.Raffle;
+import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.persistence.data.Prize;
+import com.vaadin.demo.application.adapter.persistence.data.Raffle;
 import com.vaadin.demo.application.domain.model.EventRecord;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
-import com.vaadin.demo.application.repository.MeetupEventRepository;
-import com.vaadin.demo.application.repository.ParticipantRepository;
-import com.vaadin.demo.application.repository.PrizeRepository;
-import com.vaadin.demo.application.repository.RaffleRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.MeetupEventRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.ParticipantRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.PrizeRepository;
+import com.vaadin.demo.application.adapter.persistence.repository.RaffleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +41,7 @@ public class RaffleService {
     public Optional<Raffle> getRaffleById(Long id) {
         return raffleRepository.findById(id);
     }
-    
+
     @Transactional(readOnly = true)
     public Optional<Prize> getPrizeById(Long id) {
         return prizeRepository.findById(id);
@@ -94,12 +92,12 @@ public class RaffleService {
         // First convert the domain eventRecord to a JPA entity
         MeetupEvent meetupEvent = meetupEventRepository.findByMeetupId(eventRecord.meetupId())
                 .orElseThrow(() -> new IllegalArgumentException("MeetupEvent not found with ID: " + eventRecord.meetupId()));
-        
+
         // Check if a raffle already exists for this event
         if (getRaffleByMeetupEventId(meetupEvent.getMeetupId()).isPresent()) {
             throw new IllegalStateException("A raffle already exists for this event");
         }
-        
+
         Raffle raffle = new Raffle();
         raffle.setMeetup_event_id(meetupEvent.getMeetupId());
         raffle.setEvent(meetupEvent);
@@ -128,7 +126,7 @@ public class RaffleService {
     public void deletePrize(Long prizeId) {
         prizeRepository.deleteById(prizeId);
     }
-    
+
     // Methods to make it compatible with the views
     public List<Raffle> list(Pageable pageable) {
         return raffleRepository.findAll(pageable).stream().toList();
@@ -137,7 +135,7 @@ public class RaffleService {
     public List<Raffle> list(Pageable pageable, Specification<Raffle> filter) {
         return raffleRepository.findAll(filter, pageable).stream().toList();
     }
-    
+
     public long count() {
         return raffleRepository.count();
     }
@@ -145,15 +143,15 @@ public class RaffleService {
     public long count(Specification<Raffle> filter) {
         return raffleRepository.count(filter);
     }
-    
+
     public Optional<Raffle> get(Long id) {
         return raffleRepository.findById(id);
     }
-    
+
     public Raffle save(Raffle entity) {
         return raffleRepository.save(entity);
     }
-    
+
     public void delete(Long id) {
         raffleRepository.deleteById(id);
     }

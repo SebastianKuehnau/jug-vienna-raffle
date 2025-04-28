@@ -22,14 +22,13 @@ public record PrizeTemplateRecord(
             this.name,
             this.description,
             this.templateText,
-            false,
             null,
             raffle,
             this.voucherCode,
             this.validUntil
         );
     }
-    
+
     /**
      * Create a simple template with minimal details
      */

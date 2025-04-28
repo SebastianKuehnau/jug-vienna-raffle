@@ -2,7 +2,7 @@ package com.vaadin.demo.application.views.admin.details;
 
 import com.vaadin.demo.application.application.service.MeetupApplicationService;
 import com.vaadin.demo.application.application.service.RaffleApplicationService;
-import com.vaadin.demo.application.services.meetup.MeetupClient;
+import com.vaadin.demo.application.adapter.meetupclient.MeetupClient;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.Unit;
