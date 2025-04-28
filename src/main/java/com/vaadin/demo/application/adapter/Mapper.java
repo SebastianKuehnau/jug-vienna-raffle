@@ -1,12 +1,12 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
-import com.vaadin.demo.application.adapter.persistence.data.MeetupMember;
-import com.vaadin.demo.application.adapter.persistence.data.Member;
-import com.vaadin.demo.application.adapter.persistence.data.Participant;
-import com.vaadin.demo.application.adapter.persistence.data.Prize;
-import com.vaadin.demo.application.adapter.persistence.data.PrizeTemplate;
-import com.vaadin.demo.application.adapter.persistence.data.Raffle;
+import com.vaadin.demo.application.adapter.out.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.out.persistence.data.MeetupMember;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.out.persistence.data.Prize;
+import com.vaadin.demo.application.adapter.out.persistence.data.PrizeTemplate;
+import com.vaadin.demo.application.adapter.out.persistence.data.Raffle;
 // Import Java class for API models
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.MemberRecord;
@@ -16,7 +16,7 @@ import com.vaadin.demo.application.domain.model.ParticipantRecord.RsvpStatus;
 import com.vaadin.demo.application.domain.model.PrizeRecord;
 import com.vaadin.demo.application.domain.model.PrizeTemplateRecord;
 import com.vaadin.demo.application.domain.model.RaffleRecord;
-import com.vaadin.demo.application.adapter.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
 
 import java.time.OffsetDateTime;
 import java.util.List;

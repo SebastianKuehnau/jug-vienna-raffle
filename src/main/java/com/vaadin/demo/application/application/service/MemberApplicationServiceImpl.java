@@ -1,9 +1,10 @@
 package com.vaadin.demo.application.application.service;
 
-import com.vaadin.demo.application.adapter.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
 import com.vaadin.demo.application.domain.model.MemberFormRecord;
 import com.vaadin.demo.application.domain.model.MemberRecord;
-import com.vaadin.demo.application.domain.port.MemberPort;
+import com.vaadin.demo.application.application.port.out.MemberPort;
+import com.vaadin.demo.application.application.port.in.MemberApplicationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = {
-    "com.vaadin.demo.application.domain.port",
+    "com.vaadin.demo.application.application.port",
     "com.vaadin.demo.application.application.service",
     "com.vaadin.demo.application.adapter",
 })

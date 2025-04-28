@@ -1,9 +1,9 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.adapter.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
 import com.vaadin.demo.application.domain.model.MemberRecord;
-import com.vaadin.demo.application.domain.port.MemberPort;
-import com.vaadin.demo.application.adapter.persistence.repository.MemberRepository;
+import com.vaadin.demo.application.application.port.out.MemberPort;
+import com.vaadin.demo.application.adapter.out.persistence.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

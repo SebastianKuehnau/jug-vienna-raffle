@@ -1,15 +1,15 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
-import com.vaadin.demo.application.adapter.persistence.data.Member;
-import com.vaadin.demo.application.adapter.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.out.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
 import com.vaadin.demo.application.domain.model.*;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.adapter.persistence.repository.MeetupEventRepository;
-import com.vaadin.demo.application.adapter.persistence.repository.MemberRepository;
-import com.vaadin.demo.application.adapter.persistence.repository.ParticipantRepository;
-import com.vaadin.demo.application.adapter.meetupclient.MeetupClient;
-import com.vaadin.demo.application.adapter.meetupclient.MeetupClient.MeetupEventWithRSVPs;
+import com.vaadin.demo.application.application.port.out.MeetupPort;
+import com.vaadin.demo.application.adapter.out.persistence.repository.MeetupEventRepository;
+import com.vaadin.demo.application.adapter.out.persistence.repository.MemberRepository;
+import com.vaadin.demo.application.adapter.out.persistence.repository.ParticipantRepository;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient.MeetupEventWithRSVPs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,7 +74,7 @@ public class MeetupServiceAdapter implements MeetupPort {
         return participantRepository.findByMeetupEventAndRsvpStatus(
                 entityEvent,
                 Participant.RSVPStatus.YES).stream()
-            .filter(p -> !Boolean.TRUE.equals(p.getIsOrganizer()))
+            .filter(p -> !p.getIsOrganizer())
             .map(Mapper::toParticipantRecord)
             .collect(Collectors.toList());
     }

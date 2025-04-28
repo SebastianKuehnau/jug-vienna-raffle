@@ -1,7 +1,5 @@
 package com.vaadin.demo.application.domain.model;
 
-import com.vaadin.demo.application.adapter.persistence.data.Member;
-
 import java.time.OffsetDateTime;
 
 /**
@@ -15,46 +13,6 @@ public record MemberFormRecord(
     String email,
     OffsetDateTime lastUpdated
 ) {
-    /**
-     * Create a new MemberFormRecord from a Member JPA entity
-     */
-    public static MemberFormRecord fromMember(Member member) {
-        if (member == null) return null;
-
-        return new MemberFormRecord(
-            member.getId(),
-            member.getMeetupId(),
-            member.getName(),
-            member.getEmail(),
-            member.getLastUpdated()
-        );
-    }
-
-    /**
-     * Convert to a Member JPA entity
-     * Note: This doesn't handle the participations collection
-     * @param memberFormRecord
-     */
-    public static Member toMember(MemberFormRecord memberFormRecord) {
-        Member member = new Member();
-        member.setId(memberFormRecord.id);
-        member.setMeetupId(memberFormRecord.meetupId);
-        member.setName(memberFormRecord.name);
-        member.setEmail(memberFormRecord.email);
-        member.setLastUpdated(memberFormRecord.lastUpdated != null ? memberFormRecord.lastUpdated : OffsetDateTime.now());
-        return member;
-    }
-
-    /**
-     * Update an existing Member entity with values from this form
-     */
-    public static Member updateMember(MemberFormRecord memberFormRecord, Member existingMember) {
-        existingMember.setMeetupId(memberFormRecord.meetupId);
-        existingMember.setName(memberFormRecord.name);
-        existingMember.setEmail(memberFormRecord.email);
-        existingMember.setLastUpdated(OffsetDateTime.now());
-        return existingMember;
-    }
 
     /**
      * Create a simple form record with minimal details

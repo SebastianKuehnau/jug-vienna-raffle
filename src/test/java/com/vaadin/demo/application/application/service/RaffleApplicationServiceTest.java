@@ -1,8 +1,9 @@
 package com.vaadin.demo.application.application.service;
 
 import com.vaadin.demo.application.domain.model.*;
-import com.vaadin.demo.application.domain.port.MeetupPort;
-import com.vaadin.demo.application.domain.port.RafflePort;
+import com.vaadin.demo.application.application.port.out.MeetupPort;
+import com.vaadin.demo.application.application.port.out.RafflePort;
+import com.vaadin.demo.application.application.port.in.RaffleApplicationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

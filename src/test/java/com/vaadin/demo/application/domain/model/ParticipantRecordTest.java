@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.domain.model;
 
 import com.vaadin.demo.application.adapter.Mapper;
-import com.vaadin.demo.application.adapter.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;

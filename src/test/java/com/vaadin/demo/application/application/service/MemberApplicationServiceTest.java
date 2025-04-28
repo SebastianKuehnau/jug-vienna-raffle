@@ -1,9 +1,9 @@
 package com.vaadin.demo.application.application.service;
 
-import com.vaadin.demo.application.adapter.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
 import com.vaadin.demo.application.domain.model.MemberFormRecord;
 import com.vaadin.demo.application.domain.model.MemberRecord;
-import com.vaadin.demo.application.domain.port.MemberPort;
+import com.vaadin.demo.application.application.port.out.MemberPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ class MemberApplicationServiceTest {
     private MemberPort memberPort;
 
     @InjectMocks
-    private MemberApplicationService memberApplicationService;
+    private MemberApplicationServiceImpl memberApplicationService;
 
     private MemberRecord testMemberRecord;
     private MemberFormRecord testMemberFormRecord;
@@ -40,7 +40,7 @@ class MemberApplicationServiceTest {
     @BeforeEach
     void setUp() {
         now = OffsetDateTime.now();
-        
+
         testMemberRecord = new MemberRecord(
             1L,
             "member123",
@@ -48,7 +48,7 @@ class MemberApplicationServiceTest {
             "john@example.com",
             now
         );
-        
+
         testMemberFormRecord = new MemberFormRecord(
             1L,
             "member123",
@@ -142,7 +142,7 @@ class MemberApplicationServiceTest {
             "new@example.com",
             now
         );
-        
+
         MemberRecord newMemberRecord = new MemberRecord(
             null,
             "new123",
@@ -150,7 +150,7 @@ class MemberApplicationServiceTest {
             "new@example.com",
             now
         );
-        
+
         MemberRecord savedMemberRecord = new MemberRecord(
             2L,
             "new123",
@@ -158,7 +158,7 @@ class MemberApplicationServiceTest {
             "new@example.com",
             now
         );
-        
+
         when(memberPort.saveMember(any(MemberRecord.class))).thenReturn(savedMemberRecord);
 
         // When
@@ -170,8 +170,8 @@ class MemberApplicationServiceTest {
         assertEquals("new123", result.meetupId());
         assertEquals("New Member", result.name());
         assertEquals("new@example.com", result.email());
-        
-        verify(memberPort).saveMember(argThat(record -> 
+
+        verify(memberPort).saveMember(argThat(record ->
             record.meetupId().equals(newMemberRecord.meetupId()) &&
             record.name().equals(newMemberRecord.name()) &&
             record.email().equals(newMemberRecord.email())
@@ -188,7 +188,7 @@ class MemberApplicationServiceTest {
             "updated@example.com",
             now
         );
-        
+
         MemberRecord updatedMemberRecord = new MemberRecord(
             1L,
             "member123",
@@ -196,7 +196,7 @@ class MemberApplicationServiceTest {
             "updated@example.com",
             now
         );
-        
+
         when(memberPort.saveMember(any(MemberRecord.class))).thenReturn(updatedMemberRecord);
 
         // When
@@ -208,8 +208,8 @@ class MemberApplicationServiceTest {
         assertEquals("member123", result.meetupId());
         assertEquals("Updated Name", result.name());
         assertEquals("updated@example.com", result.email());
-        
-        verify(memberPort).saveMember(argThat(record -> 
+
+        verify(memberPort).saveMember(argThat(record ->
             record.id().equals(updatedMemberRecord.id()) &&
             record.meetupId().equals(updatedMemberRecord.meetupId()) &&
             record.name().equals(updatedMemberRecord.name()) &&

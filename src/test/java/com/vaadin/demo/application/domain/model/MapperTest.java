@@ -1,11 +1,11 @@
 package com.vaadin.demo.application.domain.model;
 
 import com.vaadin.demo.application.adapter.Mapper;
-import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
-import com.vaadin.demo.application.adapter.persistence.data.Member;
-import com.vaadin.demo.application.adapter.persistence.data.Participant;
-import com.vaadin.demo.application.adapter.persistence.data.Prize;
-import com.vaadin.demo.application.adapter.persistence.data.Raffle;
+import com.vaadin.demo.application.adapter.out.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.out.persistence.data.Prize;
+import com.vaadin.demo.application.adapter.out.persistence.data.Raffle;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;

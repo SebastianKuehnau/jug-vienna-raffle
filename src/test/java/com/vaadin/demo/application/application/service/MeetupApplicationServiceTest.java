@@ -3,7 +3,8 @@ package com.vaadin.demo.application.application.service;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.MemberRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord;
-import com.vaadin.demo.application.domain.port.MeetupPort;
+import com.vaadin.demo.application.application.port.out.MeetupPort;
+import com.vaadin.demo.application.application.port.in.MeetupApplicationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,8 +31,8 @@ class MeetupApplicationServiceTest {
 
     @BeforeEach
     void setUp() {
-        meetupApplicationService = new MeetupApplicationService(meetupPort);
-        
+        meetupApplicationService = new MeetupApplicationServiceImpl(meetupPort);
+
         // Create sample test data
         sampleEvent = new EventRecord(
                 1L,
@@ -42,7 +43,7 @@ class MeetupApplicationServiceTest {
                 "Venue",
                 "Link"
         );
-        
+
         MemberRecord sampleMember = new MemberRecord(
                 1L,
                 "member123",
@@ -50,7 +51,7 @@ class MeetupApplicationServiceTest {
                 "john@example.com",
                 OffsetDateTime.now()
         );
-        
+
         sampleParticipant = new ParticipantRecord(
                 1L,
                 sampleMember,

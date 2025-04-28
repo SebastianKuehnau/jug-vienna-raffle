@@ -1,7 +1,7 @@
 package com.vaadin.demo.application.services;
 
+import com.vaadin.demo.application.domain.model.CountryRecord;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.graphql.client.HttpSyncGraphQlClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -9,7 +9,6 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class CountryService {
@@ -17,14 +16,12 @@ public class CountryService {
     private final HttpSyncGraphQlClient httpSyncGraphQlClient;
     private RestClient restClient;
 
-    public record Country(String name, String capital, String code) {}
-
     public CountryService() {
         restClient = RestClient.create("https://countries.trevorblades.com/");
         httpSyncGraphQlClient = HttpSyncGraphQlClient.create(restClient);
     }
 
-    public List<Country> fetchCountryList() {
+    public List<CountryRecord> fetchCountryList() {
         var document = """
                     {
                         countries{
@@ -35,7 +32,7 @@ public class CountryService {
                 }
                 """;
 
-        List<Country> countries =
+        List<CountryRecord> countries =
                 httpSyncGraphQlClient.document(document)
                 .retrieveSync("countries")
                 .toEntity(new ParameterizedTypeReference<>() {});
@@ -43,7 +40,7 @@ public class CountryService {
         return countries ;
     }
 
-    public List<Country> searchCountriesByPrefix(String prefix) {
+    public List<CountryRecord> searchCountriesByPrefix(String prefix) {
         String queryDocument = """
                 query($prefix: String!) {
                     countries(filter: {name: {regex: $prefix}}) {
@@ -57,7 +54,7 @@ public class CountryService {
          return Objects.requireNonNull(httpSyncGraphQlClient.document(queryDocument)
                  .variables(Map.of("prefix", "^" + prefix))
                  .retrieve("countries")
-                 .toEntityList(Country.class).block());
+                 .toEntityList(CountryRecord.class).block());
 
 
     }

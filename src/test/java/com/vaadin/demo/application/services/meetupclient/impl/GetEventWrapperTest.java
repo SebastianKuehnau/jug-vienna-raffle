@@ -1,4 +1,4 @@
-package com.vaadin.demo.application.adapter.meetupclient.impl;
+package com.vaadin.demo.application.adapter.out.meetupclient.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 

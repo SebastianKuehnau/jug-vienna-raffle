@@ -13,151 +13,170 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
 @AnalyzeClasses(packages = "com.vaadin.demo.application", importOptions = {ImportOption.DoNotIncludeTests.class})
-public class HexagonalArchitectureTest {
+class HexagonalArchitectureTest {
 
-    // Define package constants
-    private static final String DOMAIN_PACKAGE = "com.vaadin.demo.application.domain..";
-    private static final String DOMAIN_MODEL_PACKAGE = "com.vaadin.demo.application.domain.model..";
-    private static final String DOMAIN_PORT_PACKAGE = "com.vaadin.demo.application.domain.port..";
-    private static final String APPLICATION_PACKAGE = "com.vaadin.demo.application.application..";
-    private static final String ADAPTER_PACKAGE = "com.vaadin.demo.application.adapter..";
-    private static final String REPOSITORY_PACKAGE = "com.vaadin.demo.application.adapter.persistence.repository..";
-    private static final String DATA_PACKAGE = "com.vaadin.demo.application.adapter.persistence.data..";
-    private static final String VIEW_PACKAGE = "com.vaadin.demo.application.views..";
-    
-    // Define layer names for layered architecture
+    // Package constants
+    private static final String BASE_PACKAGE = "com.vaadin.demo.application";
+
+    private static final String DOMAIN_PACKAGE = BASE_PACKAGE + ".domain..";
+    private static final String DOMAIN_MODEL_PACKAGE = BASE_PACKAGE + ".domain.model..";
+
+    private static final String APPLICATION_PACKAGE = BASE_PACKAGE + ".application..";
+    private static final String APPLICATION_PORT_IN_PACKAGE = BASE_PACKAGE + ".application.port.in..";
+    private static final String APPLICATION_PORT_OUT_PACKAGE = BASE_PACKAGE + ".application.port.out..";
+    private static final String APPLICATION_SERVICE_PACKAGE = BASE_PACKAGE + ".application.service..";
+
+    private static final String ADAPTER_IN_VAADIN_PACKAGE = BASE_PACKAGE + ".adapter.in.views..";
+    private static final String ADAPTER_OUT_PERSISTENCE_PACKAGE = BASE_PACKAGE + ".adapter.out.persistence..";
+    private static final String ADAPTER_OUT_API_PACKAGE = BASE_PACKAGE + ".adapter.out.api..";
+
+    private static final String COMMON_PACKAGE = BASE_PACKAGE + ".common..";
+
+    // Layer constants
     private static final String DOMAIN_LAYER = "Domain";
     private static final String APPLICATION_LAYER = "Application";
-    private static final String ADAPTER_LAYER = "Adapter";
-    private static final String INFRASTRUCTURE_LAYER = "Infrastructure";
-    private static final String UI_LAYER = "UI";
+    private static final String ADAPTER_IN_LAYER = "AdapterIn";
+    private static final String ADAPTER_OUT_LAYER = "AdapterOut";
+    private static final String COMMON_LAYER = "Common";
 
-    /**
-     * This test verifies that domain ports are interfaces.
-     * This is a key principle of hexagonal architecture.
-     */
     @Test
     @DisplayName("Domain Ports Should Be Interfaces")
-    public void domainPortsShouldBeInterfaces() {
+    void domainPortsShouldBeInterfaces() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application.domain.port");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = classes()
-                .that().resideInAPackage(DOMAIN_PORT_PACKAGE)
-                .should().beInterfaces();
+            .that().resideInAnyPackage(APPLICATION_PORT_IN_PACKAGE, APPLICATION_PORT_OUT_PACKAGE)
+            .should().beInterfaces();
 
         rule.check(importedClasses);
     }
 
-    /**
-     * This test verifies that domain models with "Record" suffix are records.
-     * Using records for domain models ensures immutability,
-     * which is a good practice for domain objects.
-     */
     @Test
     @DisplayName("Domain Models with 'Record' Suffix Should Be Records")
-    public void domainModelsWithRecordSuffixShouldBeRecords() {
+    void domainModelsWithRecordSuffixShouldBeRecords() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application.domain.model");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = classes()
-                .that().resideInAPackage(DOMAIN_MODEL_PACKAGE)
-                .and().haveNameMatching(".*Record")
-                .should().beRecords();
+            .that().resideInAPackage(DOMAIN_MODEL_PACKAGE)
+            .and().haveSimpleNameEndingWith("Record")
+            .should().beRecords();
 
         rule.check(importedClasses);
     }
-    
-    /**
-     * This test verifies that application services depend on domain ports or models.
-     * This is a core principle of hexagonal architecture - the application layer
-     * should depend on domain abstractions.
-     */
+
     @Test
-    @DisplayName("Application Services Should Use Domain")
-    public void applicationServicesShouldUseDomain() {
+    @DisplayName("Domain Models Should Not Depend On Spring or JPA")
+    void domainModelsShouldNotDependOnFrameworks() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
+
+        ArchRule rule = noClasses()
+            .that().resideInAPackage(DOMAIN_MODEL_PACKAGE)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                "org.springframework..",
+                "javax.persistence..",
+                "jakarta.persistence.."
+            );
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    @DisplayName("Application Services Should Only Use Domain, Ports, and Spring Framework")
+    void applicationServicesShouldUseDomainPortsAndSpring() {
+        JavaClasses importedClasses = new ClassFileImporter()
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = classes()
-                .that().resideInAPackage("com.vaadin.demo.application.application.service..")
-                .and().haveNameMatching(".*ApplicationService")
-                .should().dependOnClassesThat().resideInAnyPackage(
-                        DOMAIN_PORT_PACKAGE, 
-                        DOMAIN_MODEL_PACKAGE
-                );
+            .that().resideInAPackage(APPLICATION_SERVICE_PACKAGE)
+            .should().onlyDependOnClassesThat().resideInAnyPackage(
+                APPLICATION_SERVICE_PACKAGE,
+                APPLICATION_PORT_IN_PACKAGE,
+                APPLICATION_PORT_OUT_PACKAGE,
+                DOMAIN_PACKAGE,
+                COMMON_PACKAGE,
+                "org.springframework..",   // <-- Added
+                "lombok..",                 // <-- Optional: Lombok annotations if you use @Slf4j, @RequiredArgsConstructor, etc.
+                "java..",
+                "org.slf4j.."
+            );
 
         rule.check(importedClasses);
     }
-    
-    /**
-     * This test verifies that domain models don't depend on Spring infrastructure.
-     * Domain models should be pure business logic, not tied to any framework.
-     */
+
     @Test
-    @DisplayName("Domain Models Should Not Depend On Spring")
-    public void domainModelsShouldNotDependOnSpring() {
+    @DisplayName("Only Service Implementations Should Be Annotated with @Service")
+    void onlyServiceImplementationsShouldBeAnnotatedWithService() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
+
+        ArchRule rule = classes()
+            .that().areAnnotatedWith(org.springframework.stereotype.Service.class)
+            .should().resideInAPackage(APPLICATION_SERVICE_PACKAGE);
+
+        rule.check(importedClasses);
+    }
+
+    @Test
+    @DisplayName("UI Should Not Depend On Persistence or External APIs")
+    void uiShouldNotDependOnPersistenceOrExternalApis() {
+        JavaClasses importedClasses = new ClassFileImporter()
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = noClasses()
-                .that().resideInAPackage(DOMAIN_MODEL_PACKAGE)
-                .should().dependOnClassesThat().resideInAnyPackage(
-                        "org.springframework..",
-                        "javax.persistence..",
-                        "jakarta.persistence.."
-                );
+            .that().resideInAPackage(ADAPTER_IN_VAADIN_PACKAGE)
+            .should().dependOnClassesThat().resideInAnyPackage(
+                ADAPTER_OUT_PERSISTENCE_PACKAGE,
+                ADAPTER_OUT_API_PACKAGE
+            );
 
         rule.check(importedClasses);
     }
-    
-    /**
-     * This test verifies that UI components don't directly use JPA entities.
-     * They should only use domain records to maintain proper separation.
-     */
+
     @Test
-    @DisplayName("UI Should Not Depend On Data Entities")
-    public void uiShouldNotDependOnDataEntities() {
+    @DisplayName("Persistence Layer Should Only Be Accessed From Application Or Adapters")
+    void persistenceLayerShouldOnlyBeAccessedFromApplicationOrAdapters() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = noClasses()
-                .that().resideInAPackage(VIEW_PACKAGE)
-                .should().dependOnClassesThat().resideInAPackage(DATA_PACKAGE);
+            .that().resideOutsideOfPackages(APPLICATION_PACKAGE, ADAPTER_OUT_PERSISTENCE_PACKAGE)
+            .should().accessClassesThat().resideInAnyPackage(ADAPTER_OUT_PERSISTENCE_PACKAGE);
 
         rule.check(importedClasses);
     }
-    
-    /**
-     * This test verifies the overall layered architecture of the application.
-     * It defines the allowed dependencies between layers according to hexagonal architecture.
-     */
+
     @Test
     @DisplayName("Layered Architecture Should Be Respected")
-    public void layeredArchitectureShouldBeRespected() {
+    void layeredArchitectureShouldBeRespected() {
         JavaClasses importedClasses = new ClassFileImporter()
-                .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-                .importPackages("com.vaadin.demo.application");
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages(BASE_PACKAGE);
 
         ArchRule rule = layeredArchitecture()
-                .consideringAllDependencies()
-                .layer(DOMAIN_LAYER).definedBy(DOMAIN_PACKAGE)
-                .layer(APPLICATION_LAYER).definedBy(APPLICATION_PACKAGE)
-                .layer(ADAPTER_LAYER).definedBy(ADAPTER_PACKAGE)
-                .layer(INFRASTRUCTURE_LAYER).definedBy(REPOSITORY_PACKAGE, DATA_PACKAGE)
-                .layer(UI_LAYER).definedBy(VIEW_PACKAGE)
-                
-                // Define allowed dependencies
-                .whereLayer(DOMAIN_LAYER).mayOnlyBeAccessedByLayers(APPLICATION_LAYER, ADAPTER_LAYER, UI_LAYER)
-                .whereLayer(APPLICATION_LAYER).mayOnlyBeAccessedByLayers(ADAPTER_LAYER, UI_LAYER)
-                .whereLayer(ADAPTER_LAYER).mayOnlyBeAccessedByLayers(UI_LAYER)
-                .whereLayer(INFRASTRUCTURE_LAYER).mayOnlyBeAccessedByLayers(ADAPTER_LAYER);
-                
+            .consideringAllDependencies()
+            .layer(DOMAIN_LAYER).definedBy(DOMAIN_PACKAGE)
+            .layer(APPLICATION_LAYER).definedBy(APPLICATION_PACKAGE)
+            .layer(ADAPTER_IN_LAYER).definedBy(ADAPTER_IN_VAADIN_PACKAGE)
+            .layer(ADAPTER_OUT_LAYER).definedBy(ADAPTER_OUT_PERSISTENCE_PACKAGE, ADAPTER_OUT_API_PACKAGE)
+            .layer(COMMON_LAYER).definedBy(COMMON_PACKAGE)
+
+            // Define allowed dependencies
+            .whereLayer(DOMAIN_LAYER).mayOnlyBeAccessedByLayers(APPLICATION_LAYER, ADAPTER_IN_LAYER, ADAPTER_OUT_LAYER)
+            .whereLayer(APPLICATION_LAYER).mayOnlyBeAccessedByLayers(ADAPTER_IN_LAYER, ADAPTER_OUT_LAYER)
+            .whereLayer(ADAPTER_IN_LAYER).mayNotBeAccessedByAnyLayer()
+            .whereLayer(ADAPTER_OUT_LAYER).mayNotBeAccessedByAnyLayer()
+            .whereLayer(COMMON_LAYER).mayOnlyBeAccessedByLayers(DOMAIN_LAYER, APPLICATION_LAYER, ADAPTER_IN_LAYER, ADAPTER_OUT_LAYER);
+
         rule.check(importedClasses);
     }
 }

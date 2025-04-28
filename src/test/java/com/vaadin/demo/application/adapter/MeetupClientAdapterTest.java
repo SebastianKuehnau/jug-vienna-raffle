@@ -1,14 +1,14 @@
 package com.vaadin.demo.application.adapter;
 
-import com.vaadin.demo.application.adapter.persistence.data.MeetupEvent;
-import com.vaadin.demo.application.adapter.persistence.data.Member;
-import com.vaadin.demo.application.adapter.persistence.data.Participant;
+import com.vaadin.demo.application.adapter.out.persistence.data.MeetupEvent;
+import com.vaadin.demo.application.adapter.out.persistence.data.Member;
+import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord;
-import com.vaadin.demo.application.adapter.persistence.repository.MeetupEventRepository;
-import com.vaadin.demo.application.adapter.persistence.repository.MemberRepository;
-import com.vaadin.demo.application.adapter.persistence.repository.ParticipantRepository;
-import com.vaadin.demo.application.adapter.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.out.persistence.repository.MeetupEventRepository;
+import com.vaadin.demo.application.adapter.out.persistence.repository.MemberRepository;
+import com.vaadin.demo.application.adapter.out.persistence.repository.ParticipantRepository;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
