@@ -1,33 +1,36 @@
 package com.vaadin.demo.application.adapter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClientAdapter;
 import com.vaadin.demo.application.adapter.out.persistence.data.MeetupEvent;
 import com.vaadin.demo.application.adapter.out.persistence.data.Member;
 import com.vaadin.demo.application.adapter.out.persistence.data.Participant;
-import com.vaadin.demo.application.domain.model.EventRecord;
-import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.adapter.out.persistence.repository.MeetupEventRepository;
 import com.vaadin.demo.application.adapter.out.persistence.repository.MemberRepository;
 import com.vaadin.demo.application.adapter.out.persistence.repository.ParticipantRepository;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
+import com.vaadin.demo.application.domain.model.EventRecord;
+import com.vaadin.demo.application.domain.model.ParticipantRecord;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
-class MeetupClientAdapterTest {
+class MeetupServiceAdapterTest {
 
     @Mock
-    private MeetupClient meetupApiClient;
+    private MeetupAPIClientAdapter meetupApiClient;
 
     @Mock
     private MeetupEventRepository meetupEventRepository;

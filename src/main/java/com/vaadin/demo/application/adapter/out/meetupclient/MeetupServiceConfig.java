@@ -11,18 +11,18 @@ public class MeetupServiceConfig {
 
     @Bean
     @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
-    public MeetupClient keycloakMeetupService(
+    public MeetupAPIClient keycloakMeetupService(
             @Value("${keycloak.server-url}") String keycloakServerUrl,
             @Value("${keycloak.realm}") String keycloakRealm,
             OAuth2AuthorizedClientService authorizedClientService
 
     ) {
-        return new KeycloakMeetupClientImpl(keycloakServerUrl, keycloakRealm, authorizedClientService);
+        return new KeycloakMeetupAPIClientImpl(keycloakServerUrl, keycloakRealm, authorizedClientService);
     }
 
     @Bean
     @ConditionalOnProperty(name = "app.security.enabled", havingValue = "false")
-    public MeetupClient devMeetupService() {
-        return new DevMeetupClientImpl();
+    public MeetupAPIClient devMeetupService() {
+        return new DevMeetupAPIClientImpl();
     }
 }

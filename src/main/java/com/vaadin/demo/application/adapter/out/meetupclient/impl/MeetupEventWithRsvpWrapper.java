@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient.MeetupEventWithRSVPs;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient.MemberPhoto;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient.RSVP;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClient.MeetupEventWithRSVPs;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClient.MemberPhoto;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClient.RSVP;
 import java.time.OffsetDateTime;
 import java.util.List;
 

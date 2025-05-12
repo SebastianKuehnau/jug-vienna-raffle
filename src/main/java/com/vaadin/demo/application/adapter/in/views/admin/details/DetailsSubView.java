@@ -1,8 +1,8 @@
 package com.vaadin.demo.application.adapter.in.views.admin.details;
 
+import com.vaadin.demo.application.application.port.in.MeetupAPIService;
 import com.vaadin.demo.application.application.port.in.MeetupApplicationService;
 import com.vaadin.demo.application.application.port.in.RaffleApplicationService;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.adapter.in.views.admin.components.SyncMembersButton;
 import com.vaadin.flow.component.Unit;
@@ -29,13 +29,13 @@ public class DetailsSubView extends VerticalLayout implements BeforeEnterObserve
     private final TextField dateTimeField = new TextField("Datetime");
     private final TextField tokenField = new TextField("Token");
     private final RaffleApplicationService raffleService;
-    private final MeetupClient meetupClient;
+    private final MeetupAPIService meetupAPIService;
     private final MeetupApplicationService meetupService2;
     private String currentMeetupEventId;
 
-    public DetailsSubView(RaffleApplicationService raffleService, MeetupClient meetupClient, MeetupApplicationService meetupService2) {
+    public DetailsSubView(RaffleApplicationService raffleService, MeetupAPIService meetupAPIService, MeetupApplicationService meetupService2) {
         this.raffleService = raffleService;
-        this.meetupClient = meetupClient;
+        this.meetupAPIService = meetupAPIService;
         this.meetupService2 = meetupService2;
 
         var descriptionTitle = new Span("Description");

@@ -2,7 +2,7 @@ package com.vaadin.demo.application.application.service;
 
 import com.vaadin.demo.application.domain.model.EventRecord;
 import com.vaadin.demo.application.adapter.Mapper;
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClient;
 import com.vaadin.demo.application.application.port.in.MeetupAPIService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MeetupAPIServiceImpl implements MeetupAPIService {
 
-    private final MeetupClient meetupApiClient;
+    private final MeetupAPIClient meetupApiClient;
 
     @Override
     public List<EventRecord> getExternalEvents() {

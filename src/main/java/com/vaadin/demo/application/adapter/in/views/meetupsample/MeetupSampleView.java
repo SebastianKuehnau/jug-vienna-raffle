@@ -1,6 +1,6 @@
 package com.vaadin.demo.application.adapter.in.views.meetupsample;
 
-import com.vaadin.demo.application.adapter.out.meetupclient.MeetupClient;
+import com.vaadin.demo.application.adapter.out.meetupclient.MeetupAPIClient;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -22,7 +22,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 public class MeetupSampleView extends HorizontalLayout {
 
     @Autowired
-    MeetupClient service;
+    MeetupAPIClient service;
 
     private Div content;
 
