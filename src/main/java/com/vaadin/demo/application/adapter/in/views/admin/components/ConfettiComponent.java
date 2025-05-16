@@ -4,13 +4,9 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinService;
-
-import java.util.logging.Logger;
 
 @Tag("dotlottie-wc")
 @NpmPackage(value = "@lottiefiles/dotlottie-wc", version = "0.2.21")
