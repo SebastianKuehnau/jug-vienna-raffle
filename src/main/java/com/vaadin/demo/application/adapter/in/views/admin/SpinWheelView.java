@@ -1,5 +1,6 @@
 package com.vaadin.demo.application.adapter.in.views.admin;
 
+import com.vaadin.demo.application.adapter.in.views.admin.components.ConfettiComponent;
 import com.vaadin.demo.application.domain.model.ParticipantRecord;
 import com.vaadin.demo.application.domain.model.ParticipantRecord.RsvpStatus;
 import com.vaadin.demo.application.domain.model.ParticipantRecord.AttendanceStatus;
@@ -82,6 +83,7 @@ public class SpinWheelView extends Div implements BeforeEnterObserver {
 
                     System.out.println("DEBUG: After update - Attendance status: " + winner.attendanceStatus());
 
+                    playConfettiAnimation();
                     close();
                     RouteParam routeParam = new RouteParam(DetailsMainLayout.RAFFLE_ID_PARAMETER, currentPrize.get().raffle().id());
                     UI.getCurrent().navigate(PrizesCrudSubView.class, routeParam);
@@ -171,6 +173,12 @@ public class SpinWheelView extends Div implements BeforeEnterObserver {
             setCloseOnEsc(true);
             setCloseOnOutsideClick(true);
         }
+    }
+
+    private void playConfettiAnimation() {
+        var confettiComponent = new ConfettiComponent("/static/confetti.lottie", true, false, null, null);
+        UI.getCurrent().add(confettiComponent);
+        confettiComponent.makeFullOverlay();
     }
 
     @Override
